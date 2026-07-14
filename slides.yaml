@@ -1,1 +1,36 @@
 
+slides:
+  - layout: single
+    title: "Production Evaluation Results: Background and Timeline"
+    sections:
+      - bullets:
+          - "The In-App LLM Evaluation Confluence page was shared with Validation on 10/24/2025 and is referenced in the weekly meeting minutes."
+          - "At the time of sharing, the page reported consistent development-stage results (RAG recall@5 average of 34 percent)."
+          - "On 11/08/2025, a production results section was added reporting Average Metrics for 173 Selling Points (recall@1 of 83.65 percent, MRR@1 of 86.96 percent)."
+          - "The account that added the section is now deactivated and displays as Unknown User."
+          - "The figures remain on the current page (last edited 01/07/2026), and the row-level output file was delivered to Validation as evidence."
+
+  - layout: single
+    title: "Validation Recomputation and Open Observations"
+    sections:
+      - heading: "Recomputation"
+        bullets:
+          - "Validation recomputed the averages from the delivered row-level file using the team's own scoring code; every individual row reproduces exactly."
+          - "The recomputed averages are materially lower than the posted values: recall@1 of 9.65 versus 83.65 posted; MRR@1 of 58.96 versus 86.96 posted."
+      - heading: "Open observations"
+        bullets:
+          - "No computational method identified so far reconciles the posted values to the row-level data."
+          - "The decimal portions of all twelve posted values match the recomputed averages exactly, while every integer portion is higher, each in the direction of better performance."
+          - "Several posted values exceed logical bounds: with an average ground-truth set of 6.8 documents, average recall@1 cannot exceed roughly 16 percent even with perfect retrieval."
+          - "The posted values violate required rank ordering: recall and MRR cannot decrease as k increases, yet posted recall@1 and MRR@1 exceed their @3 and @5 values."
+
+  - layout: single
+    title: "Validation Requests"
+    sections:
+      - bullets:
+          - "The script or spreadsheet that produced the posted Average Metrics, to reconcile the posted values to the row-level file. [Carl]"
+          - "The rag_evaluation.jsonl logs underlying the development-stage results table. [Carl]"
+          - "The run date and provenance of the delivered CSV, the knowledge base version it ran against, and reconciliation of the 173-row population to the 172 cached selling points. [Carl]"
+          - "Current ownership of the evaluation page, and the identity and role of the account that added the production section. [Bhavya]"
+          - "Provenance of the SME row-level testing results: reviewer, dates, methodology, and delivery chain. [Bhavya]"
+          - "The final and complete set of performance evidence for the model, with confirmation that no other versions supersede it. [Bhavya]"
