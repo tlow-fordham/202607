@@ -1,47 +1,213 @@
-# Model-7468 GenAI Selling Points - Initial Validation Weekly Meeting Minutes
+# Lumenova Guardrail Tier Configurations: Comparison and MDD Insert Pack
 
-**Date:** 07/14/2026
-**Model:** Model-7468 GenAI Selling Points
-**Meeting Type:** Weekly Initial Validation working session
-**Distribution:** Model Owner, Model Development, Validation Team
+Internal working document. Prepared to support the MRM and AI Enablement guardrail documentation streamlining effort with Jim Howard. Source artifacts are the three Lumenova guardrail exports (version 1.1, exported 07/15/2026) provided by Jim Howard:
 
-## Attendees
+- [Tier 1 - High Risk](20260715_Lumenova_Guardrail_Tier_1_High_Risk.json) (slug `tier-1-high-risk-9f36df`)
+- [Tier 2 - Moderate Risk](20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json) (slug `tier-2-moderate-risk-f1fe3b`)
+- [Tier 3 - Minimal Risk](20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json) (slug `tier-3-minimal-risk-1de9cd`)
 
-- Validation (MRM): Aditi Pandey, Jordan Low, Xinyu Wu
-- Model Owner / Model Development: Bhavya Reddy (Model Owner), Carl Huang (Model Developer)
+Each configuration is described by Lumenova as the minimum guardrail policy set to be used when onboarding a use case of that risk tier. Sections 3 through 5 below are written so a model developer can paste them into the Model Development Document (MDD), specifically the GenAI and Agentic AI Model Development Template Section 6 (Model Design and Construction, Instruction 8: describe constructions of the guardrails). Section 6 below is a paste-ready skeleton for MDD Section 7.2 (Guardrail Testing) with placeholders for the testing evidence Validation requires.
 
-## Milestones and Schedule
+---
 
-- Validation noted the new Enterprise Model Assessment lists an expected production date of 08/17/2026 while the pilot ends 08/14/2026. The model owner explained the Monday date was used because 08/15/2026 falls on a weekend. The dates will be aligned consistently across documents.
-- The model owner will send the updated Model Development Document and Monitoring Plan, incorporating responses to Validation's Important comments, following the meeting, and will upload the current documents to Archer.
-- Validation confirmed the document versions received as of this meeting are the versions the validation report will be written against.
+## 1. Configuration Common to All Three Tiers
 
-## Performance Evidence
+All three tiers enable the same six policy components; the tiers differ in thresholds, actions, and topic lists, not in which components are present.
 
-- The Model Development Document and Monitoring Plan reference retrieval performance metrics (recall, precision, and related ranking metrics). Because these metrics are part of the submitted documentation, Validation reviewed the supporting results on the model development team's evaluation Confluence page, which was provided to Validation during the engagement and is referenced in prior meeting minutes.
-- Validation recomputed the twelve aggregated retrieval metric values published on the page (recall, precision, MRR, and nDCG at k of 1, 3, and 5) directly from the team's row-level evaluation file and could not reconcile them: the recomputed values are materially lower (for example, recall@1 of 9.65 versus 83.65 published, and MRR@1 of 58.96 versus 86.96 published), and several published values lie outside the feasible range of the stated metrics. Validation also re-ran the team's evaluation script and reproduced the same row-level file.
-- The model developer stated that the retrieval evaluation reflects the lower environment and prior-year data, that the golden dataset was built against the lower-environment document chunks, and that the underlying development data is no longer available, so the results cannot be reproduced.
-- The model developer stated that the production results section of the evaluation page, including the published aggregated values, was added without his knowledge by an employee who is no longer with the team, is not accurate for production, and should be disregarded, and that the row-level evaluation spreadsheet should also be disregarded. The model developer stated that the quantitative scores available for production are the context similarity or effectiveness score and the LLM critique score; retrieval metrics are not available for production.
-- Validation requested that no changes be made to the performance content of the evaluation page, as it is the version referenced by the validation. Identified gaps will be recorded as Findings; the model development team may investigate afterwards, including whether specific results are false positives.
-- Validation presented two options under the streamlined validation process: revise and reconcile the documentation with a corresponding timeline adjustment, or proceed to completion on the evidence as provided as of this meeting. The model owner and model development team elected to proceed on the current evidence.
-- Validation confirmed how the review proceeds from here: gaps are recorded as Findings and remediated through the standard finding remediation process, no rework or evidence resubmission occurs during the validation window, and Validation will ask clarification questions where needed and will not be requesting new information or additional testing.
+| Component | Setting (all tiers) |
+|---|---|
+| Blocked-content message | "I'm sorry but I can't help you with that." |
+| Early return | Disabled |
+| Input sanitization (pre-processing) | Enabled; same 20 entity types in all tiers: CREDIT_CARD, CRYPTO, DATE_TIME, DEVICE_ID, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, NRP, LOCATION, PASSWORD, PERSON, PHONE_NUMBER, MEDICAL_LICENSE, URL, US_BANK_NUMBER, US_DRIVER_LICENSE, US_ITIN, US_PASSPORT, US_SSN, VEHICLE_ID |
+| Prompt injection detection (pre-processing) | Enabled in all tiers (threshold differs, see Section 2) |
+| Language detection (pre-processing) | Not configured (null) in all tiers |
+| Sensitive information filter (PII) | Enabled; same 20 entity types as input sanitization; no custom regex filters (actions differ in Tier 2, see Section 2) |
+| Content filter (harmful categories) | Enabled; same 15 categories in all tiers: VIOLENT_CRIMES, NON_VIOLENT_CRIMES, SEX_CRIMES, CHILD_EXPLOITATION, DEFAMATION, SPECIALIZED_ADVICE, PRIVACY, INTELLECTUAL_PROPERTY, INDISCRIMINATE_WEAPONS, HATE, SELF_HARM, SEXUAL_CONTENT, ELECTIONS, CODE_INTERPRETER_ABUSE, OPEN_AI_CONTENT_FILTER |
+| Word filter | Enabled; managed profanity filter on; no custom words |
+| Trust score and coherence score | Enabled in all tiers (action and threshold differ, see Section 2) |
+| Coherence score metrics | Same three metrics in all tiers: CONTEXT_RELEVANCE, RESPONSE_PERTINENCE, RESPONSE_GROUNDEDNESS (weights differ, see Section 2) |
+| Restricted topics | Enabled in all tiers (mode, threshold, and topic list differ, see Section 2) |
+| Evaluation policies | Not configured (null) in all tiers |
 
-## Subject Matter Expert Review Spreadsheet
+---
 
-- Validation noted that the effectiveness score in the review spreadsheet is 0.92 on all generated rows (one row at 0.95; the three static entries are not generated) and asked how the score is produced. The model developer stated the score is generated by the LLM when the selling point is created and will confirm the mechanism and the reason the values are uniform.
-- Validation noted that the review spreadsheet displayed the system's automated scores (the effectiveness score and the LLM critique) alongside each selling point during the review; the model owner acknowledged this as a process gap in the review setup.
+## 2. All Differences Between Tiers
 
-## Retrieval Flow Clarifications
+### 2.1 Threshold, action, and mode differences
 
-Validation walked through its understanding of the retrieval flow; the model developer provided clarifications, including: document entity links are created by an LLM call with a confidence score assigned at link creation; embedding-search results carry a base similarity score, with the higher score kept where a chunk appears in both paths and no normalization currently applied between the two score types; a product-family filter separates the money movement and payment solutions families; a 10 percent multiplicative boost applies to chunks mentioning the selected plans or features; boosting is otherwise limited to document type and recency, and chunk metadata is not collected or used; and the top 10 selected chunks are passed to the LLM with the customer profile for generation.
+| Parameter | Tier 1 - High Risk | Tier 2 - Moderate Risk | Tier 3 - Minimal Risk |
+|---|---|---|---|
+| Prompt injection detection threshold (pre-processing) | 0.25 | 0.50 | 0.75 |
+| Content filter: LLM-based prompt injection attacks filter | Enabled, filter strength 0.25 | Not configured (null) | Not configured (null) |
+| Content filter: dedicated LLM config | `llm_config_id` c74d2354-559d-4f13-9945-13c90aa3c0a2 | None (null) | None (null) |
+| Trust score action / threshold | BLOCK / 0.75 | INFORM / 0.50 | INFORM / 0.50 |
+| Coherence score action / threshold | BLOCK / 0.75 | INFORM / 0.50 | INFORM / 0.50 |
+| Coherence metric weights (relevance / pertinence / groundedness) | 0.25 / 0.25 / 0.50 | 0.3333 / 0.3333 / 0.3334 | 0.3333 / 0.3333 / 0.3334 |
+| Restricted topics mode | RESTRICT (blocklist) | ALLOW (allowlist) | ALLOW (allowlist) |
+| Restricted topics threshold | 0.25 | 0.50 | 0.75 |
 
-## Action Items
+Threshold semantics should be confirmed against Lumenova documentation before these values are characterized in the MDD: for the detection-style policies (prompt injection, restricted topics) a lower threshold appears to mean more sensitive flagging, while for the trust and coherence scores a higher threshold combined with a BLOCK action means responses must clear a higher quality bar to be released. [TBD: confirm threshold direction/semantics with Lumenova documentation or Jim Howard before finalizing MDD language.]
 
-- Bhavya: send the updated Model Development Document and Monitoring Plan; upload current documents to Archer.
-- Bhavya / Carl: align the Enterprise Model Assessment production date with the pilot end date across documents.
-- Carl: confirm the mechanism generating the effectiveness score and the reason the values are uniform (clarification).
-- Carl: provide the current master-branch code for the retrieval and boosting logic (clarification of existing evidence).
+### 2.2 PII filter action differences (sensitive information filter)
 
-## Items Deferred
+Tier 1 and Tier 3 apply BLOCK with TAG masking mode to all 20 entity types. Tier 2 relaxes 10 of the 20 entity types from BLOCK to MASK with REDACT masking mode:
 
-- No items deferred. Validation has no further questions at this time; remaining items will be addressed through the validation report and Findings.
+| Entity type | Tier 1 | Tier 2 | Tier 3 |
+|---|---|---|---|
+| CREDIT_CARD | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| CRYPTO | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| DATE_TIME | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| DEVICE_ID | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| EMAIL_ADDRESS | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| IBAN_CODE | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| IP_ADDRESS | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| NRP | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| LOCATION | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| PASSWORD | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| PERSON | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| PHONE_NUMBER | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| MEDICAL_LICENSE | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| URL | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| US_BANK_NUMBER | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
+| US_DRIVER_LICENSE | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| US_ITIN | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| US_PASSPORT | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| US_SSN | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+| VEHICLE_ID | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+
+### 2.3 Restricted topic list differences
+
+Tier 2 and Tier 3 use the same 26-topic allowlist (customer-service and banking topics); only the ordering in the export differs. Tier 1 uses a different 23-topic blocklist.
+
+Tier 2 / Tier 3 allowlist (model responds only to these topics): order status inquiries, return and refund policies, shipping information, account management, billing questions, troubleshooting, setup and installation, software updates, API usage, integration guides, company policies, frequently asked questions, operating hours, contact information, terms of service, product features, pricing information, product comparisons, service availability, technical specifications, finance, banking, insurance, investments, loans, mortgages.
+
+Tier 1 blocklist (model refuses these topics): financial advice, investment recommendations, tax guidance, legal advice, insurance claims, accounting guidance, medical advice, medical diagnosis, drug prescriptions, mental health counseling, emergency instructions, politics, religion, violence, adult content, gambling, substance abuse, illegal activities, weapons, hacking, social engineering, personal data harvesting, discrimination.
+
+---
+
+## 3. Observations and Open Questions for the Working Session
+
+These points should be resolved with Jim Howard before the configurations are finalized as tier baselines or documented in an MDD.
+
+1. Tier 2 versus Tier 3 PII inversion. Tier 2 (moderate risk) masks US_SSN, US_PASSPORT, US_DRIVER_LICENSE, and seven other entity types, while Tier 3 (minimal risk) blocks them outright. If the intent is monotonically stricter controls as risk increases, these actions look inverted. Masking may be deliberate (keeps the conversation usable where a hard block would break it), but the rationale should be documented.
+2. Hardcoded LLM config in Tier 1. The Tier 1 content filter references `llm_config_id` c74d2354-559d-4f13-9945-13c90aa3c0a2. This identifier is environment specific and will need remapping if the configuration is imported into another Lumenova workspace or tenant. The MDD should identify which LLM backs this filter. [TBD: which model/deployment does this LLM config point to?]
+3. Aggressive minimal-tier PII blocking. Tier 3 blocks DATE_TIME, PERSON, and LOCATION. Ordinary business queries containing a name or a date would be blocked outright, which is likely to drive a high false positive rate on legitimate traffic for a minimal-risk internal use case. Backtesting (Section 6 below) should quantify this.
+4. Allowlist scope for Tier 2/3. The allowlist reads like a generic product-support template (order status, shipping, returns) rather than a U.S. Bank specific scope. Each onboarding use case should replace or tailor this list to its intended domain; the common pitfall is an over-narrow scope blocking legitimate queries that lack obvious in-scope keywords.
+5. Threshold semantics. Confirm the direction of each threshold (see Section 2.1) before describing strictness in any formal document.
+6. Output-side coverage. The exports do not make explicit which policies run on input, output, or both. The MDD must state, per component, whether it scans the user input, the model response, or both. [TBD: confirm per-component input/output scan direction with Lumenova documentation.]
+
+---
+
+## 4. MDD Insert: Guardrail Construction Descriptions (Template Section 6, Instruction 8)
+
+The subsections below are drafted for the model developer to paste into the Model Development Document and edit. Bracketed [TBD] items are use-case-specific and must be completed by the model developer; do not leave them in the final MDD.
+
+### 4.1 Tier 1 - High Risk configuration
+
+The application implements the Lumenova Responsible AI (RAI) platform guardrail configuration "Tier 1 - High Risk" (configuration version 1.1, slug tier-1-high-risk-9f36df), the enterprise minimum guardrail policy set for onboarding a Tier 1 high-risk use case. [TBD: state why this use case is Tier 1, referencing the risk tiering assessment.]
+
+Input guardrails. All user inputs pass through pre-processing before reaching the large language model (LLM). Input sanitization detects 20 categories of sensitive entities, including credit card numbers, Social Security numbers (SSN), passport and driver license numbers, bank account numbers, passwords, personal names, phone numbers, email addresses, IP addresses, dates, and locations. A prompt injection detection policy is enabled at a threshold of 0.25, the most sensitive of the three enterprise tiers. In addition, the content filter layer applies an LLM-based prompt injection attacks filter with a filter strength of 0.25, backed by a dedicated LLM configuration ([TBD: identify the LLM model and deployment backing llm_config_id c74d2354-559d-4f13-9945-13c90aa3c0a2]).
+
+Sensitive information handling. The sensitive information filter blocks content containing any of the 20 configured personally identifiable information (PII) entity types (action BLOCK, masking mode TAG). No custom regular expression filters are configured. [TBD: state whether use-case-specific regex filters, for example internal account number formats, were added.]
+
+Content and word filtering. The content filter screens for 15 harmful content categories (violent crimes, non-violent crimes, sex crimes, child exploitation, defamation, specialized advice, privacy, intellectual property, indiscriminate weapons, hate, self-harm, sexual content, elections, code interpreter abuse, and the OpenAI content filter category). A managed profanity word filter is enabled with no custom word list. [TBD: state whether custom words were added for this use case.]
+
+Response quality controls. Trust score and coherence score policies are enabled with a BLOCK action at a threshold of 0.75; responses scoring below the threshold are blocked rather than surfaced. The coherence score weights response groundedness at 0.50 and context relevance and response pertinence at 0.25 each, emphasizing that responses must be grounded in retrieved context.
+
+Topic scope. Restricted topics operate in RESTRICT (blocklist) mode at a threshold of 0.25. The model refuses queries matching 23 blocked topics, including financial advice, investment recommendations, tax and legal advice, medical advice and diagnosis, politics, religion, weapons, hacking, social engineering, and personal data harvesting. [TBD: confirm the blocklist has been tailored to the use case and list any additions or removals with rationale.]
+
+Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled, meaning all configured policies evaluate the content. [TBD: describe logging, alerting, and human escalation when a block occurs.]
+
+### 4.2 Tier 2 - Moderate Risk configuration
+
+The application implements the Lumenova RAI platform guardrail configuration "Tier 2 - Moderate Risk" (configuration version 1.1, slug tier-2-moderate-risk-f1fe3b), the enterprise minimum guardrail policy set for onboarding a Tier 2 moderate-risk use case. [TBD: state why this use case is Tier 2, referencing the risk tiering assessment.]
+
+Input guardrails. All user inputs pass through pre-processing before reaching the LLM. Input sanitization detects the same 20 sensitive entity categories as the Tier 1 configuration. Prompt injection detection is enabled at a threshold of 0.50. The LLM-based prompt injection attacks filter available in the Tier 1 configuration is not enabled at this tier.
+
+Sensitive information handling. The sensitive information filter takes a mixed approach across the 20 configured PII entity types. Ten entity types are blocked outright (action BLOCK, masking mode TAG): credit card, crypto wallet, email address, IP address, nationality/religious/political group (NRP), password, person name, phone number, medical license, and U.S. bank account number. The remaining ten entity types are masked rather than blocked (action MASK, masking mode REDACT), allowing the conversation to continue with the sensitive value redacted: date/time, device ID, IBAN code, location, URL, U.S. driver license, U.S. Individual Taxpayer Identification Number (ITIN), U.S. passport, U.S. SSN, and vehicle ID. [TBD: document the rationale for masking rather than blocking government identifiers such as SSN and passport at this tier.] No custom regular expression filters are configured. [TBD: state whether use-case-specific regex filters were added.]
+
+Content and word filtering. Identical to the Tier 1 configuration: 15 harmful content categories and a managed profanity filter with no custom words. [TBD: state whether custom words were added for this use case.]
+
+Response quality controls. Trust score and coherence score policies are enabled with an INFORM action at a threshold of 0.50; low-scoring responses are flagged for monitoring rather than blocked. The coherence score weights context relevance, response pertinence, and response groundedness approximately equally (0.3333 / 0.3333 / 0.3334). [TBD: describe who reviews INFORM flags and on what cadence.]
+
+Topic scope. Restricted topics operate in ALLOW (allowlist) mode at a threshold of 0.50. The model responds only to queries matching 26 permitted topics covering customer-service and banking subject areas (account management, billing, troubleshooting, product features, pricing, finance, banking, insurance, investments, loans, mortgages, and related support topics). [TBD: replace or tailor the allowlist to the intended domain of this use case and confirm coverage of legitimate queries that lack obvious in-scope keywords.]
+
+Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled. [TBD: describe logging, alerting, and human escalation when a block occurs.]
+
+### 4.3 Tier 3 - Minimal Risk configuration
+
+The application implements the Lumenova RAI platform guardrail configuration "Tier 3 - Minimal Risk" (configuration version 1.1, slug tier-3-minimal-risk-1de9cd), the enterprise minimum guardrail policy set for onboarding a Tier 3 minimal-risk use case. [TBD: state why this use case is Tier 3, referencing the risk tiering assessment.]
+
+Input guardrails. All user inputs pass through pre-processing before reaching the LLM. Input sanitization detects the same 20 sensitive entity categories as the higher tiers. Prompt injection detection is enabled at a threshold of 0.75, the least sensitive of the three enterprise tiers. The LLM-based prompt injection attacks filter is not enabled at this tier.
+
+Sensitive information handling. The sensitive information filter blocks content containing any of the 20 configured PII entity types (action BLOCK, masking mode TAG), including dates, person names, and locations. [TBD: assess and document the expected false positive impact of blocking dates, names, and locations on legitimate traffic for this use case; see guardrail backtesting in Section 7.2.] No custom regular expression filters are configured.
+
+Content and word filtering. Identical to the higher tiers: 15 harmful content categories and a managed profanity filter with no custom words.
+
+Response quality controls. Trust score and coherence score policies are enabled with an INFORM action at a threshold of 0.50, with approximately equal coherence metric weights, matching the Tier 2 configuration. [TBD: describe who reviews INFORM flags and on what cadence.]
+
+Topic scope. Restricted topics operate in ALLOW (allowlist) mode at a threshold of 0.75, using the same 26-topic customer-service and banking allowlist as the Tier 2 configuration. [TBD: replace or tailor the allowlist to the intended domain of this use case.]
+
+Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled. [TBD: describe logging, alerting, and human escalation when a block occurs.]
+
+---
+
+## 5. MDD Insert: Guardrail Testing (Template Section 7.2) - Required Evidence Skeleton
+
+The GenAI and Agentic AI Model Development Template Section 7.2 requires the model developer to (1) describe the tests conducted to assess guardrail effectiveness against potential risks and adversarial inputs, covering hallucination detection, toxicity, and adversarial testing, and (2) report guardrail performance testing metrics, results, and conclusions, covering both red teaming (attempts and bypasses) and backtesting on legitimate traffic (false positives and false negatives). Vendor-published benchmarks alone are not sufficient; testing must use U.S. Bank actual input and output data (real or representative production queries and model responses), because vendor benchmarks may not reflect U.S. Bank terminology, content patterns, or user behavior.
+
+The skeleton below covers each enabled policy component. Complete every [TBD] with actual results; delete rows that genuinely do not apply and state why.
+
+### 5.2.1 Testing approach
+
+[TBD: Describe who conducted testing (team, independence from development), the test period, the datasets used (named public attack datasets and/or custom U.S. Bank attack sets), any automated toolkits (e.g., Garak, Adversarial Robustness Toolbox), and the scope of manual expert red teaming. Adversarial testing should go beyond naive single-turn attacks and include multi-turn manipulation, indirect injection via retrieved content, encoding tricks, and non-standard English inputs.]
+
+[TBD: Describe the backtesting dataset: N U.S. Bank production or pilot queries with actual model inputs and outputs, the sampling method, the period covered, and how ground truth labels (harmful versus legitimate; should-block versus should-pass) were assigned and by whom.]
+
+### 5.2.2 Red teaming / adversarial testing results
+
+| Risk category | Test attempts | Successful bypasses | Bypass rate | Severity breakdown | Remediation |
+|---|---|---|---|---|---|
+| Prompt injection (pre-processing detector) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Prompt injection (LLM-based content filter, Tier 1 only) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Jailbreaking | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Data exfiltration (system prompt, training data, PII) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Toxicity (input) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Toxicity (output) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Off-topic / scope escape (restricted topics) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+
+### 5.2.3 Backtesting on U.S. Bank data: confusion matrix per component
+
+For each enabled guardrail component, report a confusion matrix built from actual U.S. Bank input and output data, where "positive" means the guardrail should act (block, mask, or flag):
+
+| Component | True positives (correctly blocked/masked) | False positives (legitimate content blocked/masked) | False negatives (should-block content passed) | True negatives (legitimate content passed) | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|---|
+| PII filter (per entity type where volumes allow) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Prompt injection detection | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Content filter (harmful categories) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Word filter (profanity) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Restricted topics (allowlist/blocklist) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+| Trust score / coherence score (against human quality labels) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
+
+Report alongside the matrix: total legitimate queries tested [TBD: N], overall false positive rate [TBD]%, overall false negative rate [TBD]%, and the number of harmful or inappropriate outputs that bypassed guardrails end to end [TBD].
+
+### 5.2.4 Failure pattern analysis
+
+[TBD: Document patterns in failures by severity and category (prompt injection, jailbreaking, data exfiltration, toxicity, off-topic). Document common false positives affecting user experience, for example legitimate banking terminology or product names triggering blocks, and any allowlist adjustments made. Document edge cases requiring human escalation. If threshold or action settings were tuned away from the tier baseline as a result, state the change, the rationale, and the retest results. Any deviation from the enterprise tier-minimum baseline must be identified as such.]
+
+### 5.2.5 Safety-utility tradeoff
+
+[TBD: State the balance struck between strictness and utility for this use case, including the rationale for the tier selected and any threshold tuning. For Tier 3 deployments, specifically address the false positive impact of blocking DATE_TIME, PERSON, and LOCATION entities on legitimate traffic. For Tier 2 deployments, address the residual risk of masking rather than blocking government identifiers.]
+
+### 5.2.6 Platform and version reference
+
+[TBD: State the Lumenova platform version, the guardrail configuration name, slug, and version used, whether the configuration matches the enterprise tier baseline exactly or was modified, and reference any enterprise-level testing of the Lumenova platform already completed that this MDD leverages. Confirm how updates to the guardrail configuration will be change-managed and how guardrail performance will be monitored in production, since guardrail testing must not be static-only.]
+
+---
+
+## 6. Files in This Pack
+
+- [20260715_Lumenova_Guardrail_Tier_1_High_Risk.json](20260715_Lumenova_Guardrail_Tier_1_High_Risk.json)
+- [20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json](20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json)
+- [20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json](20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json)
+- This document.
