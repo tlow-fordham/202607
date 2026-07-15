@@ -1,213 +1,160 @@
-# Lumenova Guardrail Tier Configurations: Comparison and MDD Insert Pack
 
-Internal working document. Prepared to support the MRM and AI Enablement guardrail documentation streamlining effort with Jim Howard. Source artifacts are the three Lumenova guardrail exports (version 1.1, exported 07/15/2026) provided by Jim Howard:
+# 5 Validation Summary
 
-- [Tier 1 - High Risk](20260715_Lumenova_Guardrail_Tier_1_High_Risk.json) (slug `tier-1-high-risk-9f36df`)
-- [Tier 2 - Moderate Risk](20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json) (slug `tier-2-moderate-risk-f1fe3b`)
-- [Tier 3 - Minimal Risk](20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json) (slug `tier-3-minimal-risk-1de9cd`)
+## 5.1 Prior Validation Outcomes
 
-Each configuration is described by Lumenova as the minimum guardrail policy set to be used when onboarding a use case of that risk tier. Sections 3 through 5 below are written so a model developer can paste them into the Model Development Document (MDD), specifically the GenAI and Agentic AI Model Development Template Section 6 (Model Design and Construction, Instruction 8: describe constructions of the guardrails). Section 6 below is a paste-ready skeleton for MDD Section 7.2 (Guardrail Testing) with placeholders for the testing evidence Validation requires.
+This is the initial validation of a new model; there are no prior full-validation outcomes. The model has operated in a limited pilot under a Provisional Approval, granted an Approved with Restriction outcome on 12/11/2025 for pilot use from 12/15/2025 through 04/15/2026, and a subsequent Special Purpose Validation that extended the pilot to 08/14/2026 (approved 04/09/2026). Both were time-bound provisional outcomes restricting the pilot to a subset of Small Business Specialist bankers and to three products, and neither raised any actionable or non-actionable observations or Findings. This Initial Validation is the full validation following the pilot period.
 
----
+## 5.2 Summary of Recent Changes to Model
 
-## 1. Configuration Common to All Three Tiers
+Measured against the last validation activity, the Provisional Approval and its Special Purpose Validation extension, two changes are relevant. First, the product branding changed from Talech to Elavon, implemented as a code-level search-and-replace during document processing, with the source documents unchanged and the production cache regenerated against the Elavon-branded content; this is assessed in Sections 7.1 and 8.1 of this validation report. Second, the banker feedback committed at the Provisional Approval, a 1-to-5 selling-point rating with free text, was not implemented: the 1-to-5 rating is not collected, addressed under the Moderate Priority Finding on Documentation Transparency and Robustness, and the committed free-text feedback was not enabled in production, addressed under the Moderate Priority Finding on Coding and Calculation Errors, where that item was resolved during the review; the structured feedback currently collected consists of preset reject reasons oriented to the product recommendation, while the free-text feedback field can address either the recommendation or the generated selling point but is sparse in practice (Sections 10.1, 12, and 5.4). The model framework is otherwise unchanged from the provisionally approved version.
 
-All three tiers enable the same six policy components; the tiers differ in thresholds, actions, and topic lists, not in which components are present.
+## 5.3 Current Validation Conclusions
 
-| Component | Setting (all tiers) |
-|---|---|
-| Blocked-content message | "I'm sorry but I can't help you with that." |
-| Early return | Disabled |
-| Input sanitization (pre-processing) | Enabled; same 20 entity types in all tiers: CREDIT_CARD, CRYPTO, DATE_TIME, DEVICE_ID, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, NRP, LOCATION, PASSWORD, PERSON, PHONE_NUMBER, MEDICAL_LICENSE, URL, US_BANK_NUMBER, US_DRIVER_LICENSE, US_ITIN, US_PASSPORT, US_SSN, VEHICLE_ID |
-| Prompt injection detection (pre-processing) | Enabled in all tiers (threshold differs, see Section 2) |
-| Language detection (pre-processing) | Not configured (null) in all tiers |
-| Sensitive information filter (PII) | Enabled; same 20 entity types as input sanitization; no custom regex filters (actions differ in Tier 2, see Section 2) |
-| Content filter (harmful categories) | Enabled; same 15 categories in all tiers: VIOLENT_CRIMES, NON_VIOLENT_CRIMES, SEX_CRIMES, CHILD_EXPLOITATION, DEFAMATION, SPECIALIZED_ADVICE, PRIVACY, INTELLECTUAL_PROPERTY, INDISCRIMINATE_WEAPONS, HATE, SELF_HARM, SEXUAL_CONTENT, ELECTIONS, CODE_INTERPRETER_ABUSE, OPEN_AI_CONTENT_FILTER |
-| Word filter | Enabled; managed profanity filter on; no custom words |
-| Trust score and coherence score | Enabled in all tiers (action and threshold differ, see Section 2) |
-| Coherence score metrics | Same three metrics in all tiers: CONTEXT_RELEVANCE, RESPONSE_PERTINENCE, RESPONSE_GROUNDEDNESS (weights differ, see Section 2) |
-| Restricted topics | Enabled in all tiers (mode, threshold, and topic list differ, see Section 2) |
-| Evaluation policies | Not configured (null) in all tiers |
+Validation completed the Initial Validation of Model-7468 GenAI Selling Points, covering the model's generation of selling points for the three Elavon products within the scope defined in Section 2 of this validation report. The assessment drew on the Model Development Document, the production code and configuration, the reported subject matter expert review results, sample outputs, Validation's independent faithfulness review of the full cached population, and discussions with the model owner and model development team.
 
----
+The outcome is Approved with Restrictions. Validation performed an independent faithfulness review of all 172 cached selling points against the source documents, the curated selling-points source, and the product database descriptions used in generation. The review identified three selling points, all for Elavon Terminal, with unqualified cost phrasing traced to the recommender input data; the business line acknowledged the limitation and the correction is tracked to closure under the High Priority Finding on Performance of Estimation Method. Bankers review each selling point before use and cannot alter it, and the model is internally facing, does not interact with customers, and does not decide without manual intervention. The recommendation step is deterministic and the risk rating recorded in the inventory is Low.
 
-## 2. All Differences Between Tiers
+The evidence and control gaps identified during the validation are recorded in four Findings, detailed in Section 5.4 of this validation report. The published automated performance results could not be replicated from the underlying output and were withdrawn by the model development team during the validation; the effectiveness score attached to each output provides no demonstrated signal and its production values cannot be reconciled to the code and prompt artifacts provided; the subject matter expert review relied upon as the primary performance evidence is not evidenced by a reviewer-created record and has no mechanism to alter or withhold content from serving; content is regenerated by the model within each environment without a review gate before serving; coding errors disable a committed feedback control and introduce evaluation-code defects; the ongoing monitoring plan does not yet establish a reliable quality signal or valid baselines; and the documentation does not fully reflect the model as built. Validation's independent review substitutes as the performance evidence for this validation, and the restriction contains the regeneration and review-control risk while the Findings are remediated.
 
-### 2.1 Threshold, action, and mode differences
+On this basis the outcome is Approved with Restrictions: production use of the current cached selling points for the three Elavon products is approved for six months from the sign-off date ([TBD - sign-off date] through [TBD - sign-off date plus six months]). During the restriction period, no cached selling point may be regenerated and no new selling point may be added to production without documented subject matter expert review before serving and prior notification to Model Risk Management. Lifting the restriction requires closure of the Findings, in particular the High Priority Finding on Performance of Estimation Method; absent closure within the restriction period, production use is to cease pending remediation. The next validation activities are stated in Section 3 of this validation report.
 
-| Parameter | Tier 1 - High Risk | Tier 2 - Moderate Risk | Tier 3 - Minimal Risk |
+## 5.4 Validation Issues and Findings
+
+**Table 4 - Summary of Issues and Findings**
+
+| | High | Moderate | Low |
 |---|---|---|---|
-| Prompt injection detection threshold (pre-processing) | 0.25 | 0.50 | 0.75 |
-| Content filter: LLM-based prompt injection attacks filter | Enabled, filter strength 0.25 | Not configured (null) | Not configured (null) |
-| Content filter: dedicated LLM config | `llm_config_id` c74d2354-559d-4f13-9945-13c90aa3c0a2 | None (null) | None (null) |
-| Trust score action / threshold | BLOCK / 0.75 | INFORM / 0.50 | INFORM / 0.50 |
-| Coherence score action / threshold | BLOCK / 0.75 | INFORM / 0.50 | INFORM / 0.50 |
-| Coherence metric weights (relevance / pertinence / groundedness) | 0.25 / 0.25 / 0.50 | 0.3333 / 0.3333 / 0.3334 | 0.3333 / 0.3333 / 0.3334 |
-| Restricted topics mode | RESTRICT (blocklist) | ALLOW (allowlist) | ALLOW (allowlist) |
-| Restricted topics threshold | 0.25 | 0.50 | 0.75 |
+| Number of Actionable Issues | 0 | 0 | 0 |
+| Number of Actionable Findings | 1 | 3 | 0 |
+| Number of Non-Actionable Findings | 0 | 0 | 0 |
 
-Threshold semantics should be confirmed against Lumenova documentation before these values are characterized in the MDD: for the detection-style policies (prompt injection, restricted topics) a lower threshold appears to mean more sensitive flagging, while for the trust and coherence scores a higher threshold combined with a BLOCK action means responses must clear a higher quality bar to be released. [TBD: confirm threshold direction/semantics with Lumenova documentation or Jim Howard before finalizing MDD language.]
+There are no non-actionable Findings in this report.
 
-### 2.2 PII filter action differences (sensitive information filter)
+#### 5.4.1 Actionable Issues
 
-Tier 1 and Tier 3 apply BLOCK with TAG masking mode to all 20 entity types. Tier 2 relaxes 10 of the 20 entity types from BLOCK to MASK with REDACT masking mode:
+There are no actionable issues in this report.
 
-| Entity type | Tier 1 | Tier 2 | Tier 3 |
-|---|---|---|---|
-| CREDIT_CARD | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| CRYPTO | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| DATE_TIME | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| DEVICE_ID | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| EMAIL_ADDRESS | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| IBAN_CODE | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| IP_ADDRESS | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| NRP | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| LOCATION | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| PASSWORD | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| PERSON | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| PHONE_NUMBER | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| MEDICAL_LICENSE | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| URL | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| US_BANK_NUMBER | BLOCK / TAG | BLOCK / TAG | BLOCK / TAG |
-| US_DRIVER_LICENSE | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| US_ITIN | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| US_PASSPORT | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| US_SSN | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
-| VEHICLE_ID | BLOCK / TAG | MASK / REDACT | BLOCK / TAG |
+#### 5.4.2 Actionable Findings
 
-### 2.3 Restricted topic list differences
+**Finding Table 1**
+- Finding Count: 1
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Coding and Calculation Errors
+- Finding Priority: Moderate
+- MRM Category: Coding and Calculation Errors
+- Finding Description: Validation reviewed the model code and identified coding errors in the feedback and evaluation components:
+  - The banker feedback collection on generated selling points committed at the Provisional Approval was not enabled in production. The condition was identified during this validation and the model owner enabled the collection in response; this item is resolved.
+  - The evaluation code contains defects that will carry into ongoing monitoring if its computations are reused: the context-similarity computation silently substitutes the first product document when the product-title match fails, so scores can be computed against the wrong product's context; the sensitivity computation returns a default of 1.0 when a comparison set is empty, making the industry sensitivity structurally 100 percent; retrieved document names are not deduplicated before scoring; the judge evaluation records a fixed mid-range score when the model response cannot be parsed, so a recorded score is not always a judgment; and the judge evaluation constructs a recommended-features instruction intended to prevent recommended features from being flagged as unsupported, but the judge prompt template contains no placeholder for it, so the section is silently dropped and never reaches the judge.
 
-Tier 2 and Tier 3 use the same 26-topic allowlist (customer-service and banking topics); only the ordering in the export differs. Tier 1 uses a different 23-topic blocklist.
+  As a result, Validation requests the model owner and model development team to:
+  - Correct the evaluation code defects before any of these computations are used for ongoing monitoring.
+  - Confirm through ongoing monitoring that a usable selling-point feedback signal accumulates from the enabled collection.
 
-Tier 2 / Tier 3 allowlist (model responds only to these topics): order status inquiries, return and refund policies, shipping information, account management, billing questions, troubleshooting, setup and installation, software updates, API usage, integration guides, company policies, frequently asked questions, operating hours, contact information, terms of service, product features, pricing information, product comparisons, service availability, technical specifications, finance, banking, insurance, investments, loans, mortgages.
+  See Section 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The coding errors disable a committed feedback control and introduce evaluation defects that would carry into ongoing monitoring if the computations are reused; the errors do not affect the generated selling points themselves and there is no evidence of incorrect generation. A High Priority Finding is not warranted because the generated outputs are unaffected; a Low Priority Finding is not warranted because the defects bear directly on the monitoring backstop the streamlined scope relies on. Therefore, a Moderate Priority Finding is justified.
 
-Tier 1 blocklist (model refuses these topics): financial advice, investment recommendations, tax guidance, legal advice, insurance claims, accounting guidance, medical advice, medical diagnosis, drug prescriptions, mental health counseling, emergency instructions, politics, religion, violence, adult content, gambling, substance abuse, illegal activities, weapons, hacking, social engineering, personal data harvesting, discrimination.
+**Finding Table 2**
+- Finding Count: 2
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Documentation Transparency and Robustness
+- Finding Priority: Moderate
+- MRM Category: Documentation Transparency and Robustness
+- Finding Description: The model documentation (Model Development Document, Monitoring Plan, and Enterprise Model Assessment) contains inaccurate or incomplete information and does not fully reflect the model as built:
+  - The stated knowledge base chunk count of 28 does not match the current count of 32.
+  - The maximum output tokens is stated inconsistently as both 25,000 and 2,000, and 25,000 exceeds GPT-4o's published output limit.
+  - The architecture diagram does not depict the production cache.
+  - The documentation states that per-chunk metadata (including company size and annual revenue) is extracted, maintained, and used in ranking, whereas this metadata is not populated with usable values, so the described business-size boost does not influence ranking in practice; the documentation also lists a product-type match boost among the ranking factors, which cannot operate because the product data model lacks the attribute it keys on.
+  - The documentation does not describe that the generation prompt injects the product name and description from the product database, which is the source of the product-attribute language in the outputs, nor any review governance for those descriptions.
+  - The documentation does not describe the recommender mapping data, including the segment population, the North American Industry Classification System code coverage, and the basis for the number of generating segments.
+  - The documentation does not state the environment or run date of the performance evidence presented, and the sample selling points shown carry scores that the production configuration does not produce.
+  - The documentation does not clarify that only negative feedback is stored and positive feedback is not collected, nor that the 1-to-5 selling-point rating feedback described in the Provisional Approval is not collected.
+  - The stated development date (August 2025) does not match the version-control date (May 2026).
+  - The stated Enterprise Model Assessment identifier (EMA - 66885813) refers to the pilot-era assessment rather than the current record (68224437 per Archer).
+  - The documentation does not define the effectiveness score attached to each selling point, and the Enterprise Model Assessment describes the score as an input to prompt refinement, a use that is not evidenced.
+  - The documentation's narrative describes a large language model as-a-judge evaluation of faithfulness, answer relevance, and context relevance; this evaluation is not performed, and the narrative does not match the implemented judge rubric (information utilization, clarity and structure, persuasiveness, and accuracy) reproduced in the documentation's own appendix. The documentation does not explain the judge sub-scores, their weights, or the rationale for the weighting.
+  - The judge prompt reproduced in the appendix does not correspond to the recorded llm_critique scores: the model development team stated during the validation that the judge prompt has been revised, the recorded score distribution is concentrated on a small set of values, which the appended prompt expressly instructs against, the recorded critiques carry a single overall score without the four sub-scores the appended prompt requires, and the prompt version that produced the recorded scores is not provided.
+  - The documentation states that embedding (cosine) similarity between the generated selling point and the source product context is computed as an additional quality signal; this computation is not part of the model's operation, and the evaluation run that produced it was withdrawn by the model development team during the validation.
+  - The documentation states that standard information-retrieval metrics (Recall@k, Precision@k, nDCG@k, and MRR) are computed when ground-truth labels are available; no ground-truth labels exist, and the one evaluation producing these metrics was withdrawn.
+  - The documentation states that metadata extraction quality is assessed indirectly through the downstream selling point evaluation pipeline; that pipeline is not in use, and the extracted metadata is not used in production.
+  - The documentation does not state that content is generated within each environment and refreshed only through regeneration events, or the governance for cache changes, namely that any knowledge base change or new or updated selling point receives subject matter expert review before it is served.
+  - The documentation retains working commentary and drafting artifacts that do not belong in the final document.
 
----
+  As a result, Validation requests the model owner and model development team to:
+  - Correct the chunk count and the output-token value.
+  - Update the architecture diagram to show the production cache.
+  - Correct the chunk-metadata description and disclose the operational status of the business-size and product-type boosts.
+  - Document the injected product-description pathway and its review governance.
+  - Describe the recommender mapping data (segment population, code coverage, and the generating-segment basis).
+  - State the environment and run date for all performance evidence.
+  - Record the feedback actually collected and clarify that only negative feedback is stored.
+  - Document the per-environment generation design and the subject matter expert review governance for any cache or knowledge base change.
+  - Correct the development date.
+  - Update the Enterprise Model Assessment identifier and define the effectiveness score and its intended use.
+  - Remove the end-to-end evaluation description or revise it to describe only the evaluation actually performed and relied upon: align the narrative judge description with the implemented prompt reproduced in the appendix, explain the judge sub-scores, their weights, and the rationale for the weighting, remove the information-retrieval metrics claim or state that no ground-truth labels exist to support it, remove the embedding-similarity quality signal claim or state when it was computed and its status, remove the indirect metadata-quality assessment claim, and state the judge prompt version applicable to any recorded or reported scores.
+  - Remove the residual drafting artifacts so that the documentation reflects the model as built.
 
-## 3. Observations and Open Questions for the Working Session
+  See Sections 4, 7.1, 7.2, 7.3, 10.1, and 12 of this validation report.
+- Root Cause Selection: Other Concern [TBD - confirm the standard definition sentence for the Other Concern selection from the Archer dropdown]
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The gaps compromise transparency and led to the improper interpretation of results during this validation, including performance evidence whose environment and provenance were not stated. A High Priority Finding is not warranted because the model's data sources, processing, and controls were established through the validation; a Low Priority Finding is not warranted because the documentation as submitted did not reflect the model as built in respects material to the review. Therefore, a Moderate Priority Finding is justified.
 
-These points should be resolved with Jim Howard before the configurations are finalized as tier baselines or documented in an MDD.
+**Finding Table 3**
+- Finding Count: 3
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Monitoring
+- Finding Priority: Moderate
+- MRM Category: Monitoring
+- Finding Description: The ongoing monitoring plan defines performance thresholds for its metrics, including subject matter expert evaluation (greater than or equal to 95 percent), large language model as-a-judge score, context similarity (greater than or equal to 0.85), retrieval (within plus or minus 10 percent of baseline), and thumbs-down rate (less than or equal to 10 percent). Validation examined the plan and identified the following concerns:
+  - The plan's primary automated quality metric is the large language model as-a-judge evaluation, which Validation found does not support a performance conclusion (raised in the High Priority Finding on Performance of Estimation Method, and assessed in Section 8.1 of this validation report); the plan nonetheless relies on it as the primary automated signal.
+  - The plan states two different acceptance thresholds for the judge score (0.70 and 0.60) in different sections. Against the production output, 21 of the 171 scored selling points (12.3 percent) score below 0.70 while two (1.2 percent) score below 0.60 (one further row carries no score), so the two stated thresholds produce different monitoring outcomes for the same population.
+  - The plan's baselines are defined by reference to the initial automated evaluation outputs, which the model development team withdrew during the validation, so the baselines as defined are not valid.
+  - The sensitivity testing the plan describes (shifting inputs and regenerating for comparison) differs from the sensitivity computation implemented.
+  - The structured thumbs up/down feedback and its threshold are oriented to the product recommendation rather than the generated selling point, and the free-text feedback field, which could provide a usable selling-point quality signal, is treated in the plan as a secondary annual manual review with no defined threshold or acceptance criteria.
 
-1. Tier 2 versus Tier 3 PII inversion. Tier 2 (moderate risk) masks US_SSN, US_PASSPORT, US_DRIVER_LICENSE, and seven other entity types, while Tier 3 (minimal risk) blocks them outright. If the intent is monotonically stricter controls as risk increases, these actions look inverted. Masking may be deliberate (keeps the conversation usable where a hard block would break it), but the rationale should be documented.
-2. Hardcoded LLM config in Tier 1. The Tier 1 content filter references `llm_config_id` c74d2354-559d-4f13-9945-13c90aa3c0a2. This identifier is environment specific and will need remapping if the configuration is imported into another Lumenova workspace or tenant. The MDD should identify which LLM backs this filter. [TBD: which model/deployment does this LLM config point to?]
-3. Aggressive minimal-tier PII blocking. Tier 3 blocks DATE_TIME, PERSON, and LOCATION. Ordinary business queries containing a name or a date would be blocked outright, which is likely to drive a high false positive rate on legitimate traffic for a minimal-risk internal use case. Backtesting (Section 6 below) should quantify this.
-4. Allowlist scope for Tier 2/3. The allowlist reads like a generic product-support template (order status, shipping, returns) rather than a U.S. Bank specific scope. Each onboarding use case should replace or tailor this list to its intended domain; the common pitfall is an over-narrow scope blocking legitimate queries that lack obvious in-scope keywords.
-5. Threshold semantics. Confirm the direction of each threshold (see Section 2.1) before describing strictness in any formal document.
-6. Output-side coverage. The exports do not make explicit which policies run on input, output, or both. The MDD must state, per component, whether it scans the user input, the model response, or both. [TBD: confirm per-component input/output scan direction with Lumenova documentation.]
+  As a result, Validation requests the model owner and model development team to:
+  - Remove or demote the large language model as-a-judge evaluation from the monitoring plan.
+  - Elevate the banker free-text feedback field to the primary selling-point quality signal, updating the field's description to encourage feedback on the generated selling point and defining a monitoring cadence shorter than annual.
+  - Define a threshold for selling-point feedback quality, for example a subject matter expert periodically reading and classifying the collected free-text feedback and comparing the volume of adverse selling-point feedback to the number of leads generated over the monitoring period.
+  - Rebuild the baselines from valid production data.
+  - Resolve the internal threshold inconsistency.
+  - Align the documented sensitivity methodology with the implemented computation or implement the documented one.
 
----
+  Because the streamlined testing scope relies on ongoing monitoring as a backstop for reduced independent testing, an adequate quality signal, defined thresholds, and valid baselines are necessary before the first monitoring cycle. See Section 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The streamlined testing scope relies on ongoing monitoring as the primary backstop for reduced independent testing, and the plan as drafted relies on a limited automated quality signal and does not define a threshold for selling-point feedback. A High Priority Finding is not warranted because the served content was independently reviewed by Validation and bankers review each output before use, which constrains near-term risk; a Low Priority Finding is not warranted because the monitoring backstop is central to the streamlined validation approach. Therefore, a Moderate Priority Finding is justified.
 
-## 4. MDD Insert: Guardrail Construction Descriptions (Template Section 6, Instruction 8)
+**Finding Table 4**
+- Finding Count: 4
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Performance of Estimation Method
+- Finding Priority: High
+- MRM Category: Performance of Estimation Method
+- Finding Description: The performance evidence provided for the model did not withstand review, and the serving pathway lacks a review gate:
+  - The published aggregated retrieval results include values outside the feasible range of the stated metrics and could not be reconciled to the underlying row-level output; the model development team stated during the validation that the published production results were erroneous and that the row-level retrieval evaluation should be disregarded in its entirety. No retrieval performance evidence exists for the production environment, and the development-environment results cannot be reproduced because the underlying data is no longer available.
+  - The effectiveness score attached to each selling point provides no demonstrated signal. The score is a self-assessment: it is requested from the same large language model call that generates the selling point, so no evaluation independent of the generation underlies it. In the production output, 169 of the 172 generated selling points (98.3 percent) carry a score of exactly 0.92 and the remaining three (1.7 percent) carry 0.95, and the code and prompt artifacts provided to Validation cannot be reconciled with these values; the code provided takes the score from the model response with a default of 0.0 when the model omits it, and the prompt requests a value between 0 and 1 without a reference value. The model documentation does not define the metric.
+  - The llm_critique score attached to each selling point, the only other automated quality measure recorded, does not support a performance conclusion. Accuracy, the only criterion bearing on factual grounding, carries the lowest weight in the implemented rubric (15 percent), so the composite primarily reflects marketing quality, and an output scoring zero on factual grounding can exceed both acceptance thresholds stated in the monitoring plan. The recorded critique text is materially identical across the recorded score bands and identifies no factual-grounding or compliance concern, so the numeric differences between bands carry no discernible risk meaning, and the recorded composites cannot be decomposed because the sub-scores are not retained.
+  - The subject matter expert review relied upon as the primary performance evidence under the streamlined scope is not evidenced: the results file provided records pass outcomes added by the model owner after the review rather than the reviewer's own entries, contains no reviewer rationale and none of the segment information the documentation states is reviewed with each output, and displayed the system's automated scores alongside each row, which the model owner acknowledged as a process gap. A pass is recorded for every row at every automated score value, including the two rows the system scored 0.00, below the monitoring plan's breach threshold. The review also lacks a documented standard for what constitutes a pass, including gradations, reviewer edits or enhancements, and an assessment of answer completeness against the available source content.
+  - The review has no mechanism to modify content or withhold it from serving: selling points are generated by the model within each environment, including production, at startup and on regeneration events, and no technical control prevents unreviewed content from being served; the production cache was fully regenerated when the source documents were rebranded and was served before any review took place.
+  - Validation performed an independent faithfulness review of all 172 cached selling points as substitute evidence (Section 8.1 of this validation report), which identified three selling points with unqualified cost phrasing traced to the recommender input data; the business line acknowledged that limitation and the correction is tracked to closure under this Finding.
 
-The subsections below are drafted for the model developer to paste into the Model Development Document and edit. Bracketed [TBD] items are use-case-specific and must be completed by the model developer; do not leave them in the final MDD.
+  As a result, Validation requests the model owner and model development team to:
+  - Provide the subject matter expert's original review record or a written attestation of the reviewer, dates, and method for the current cache.
+  - Implement a documented row-level review for all future or regenerated content, under a documented review standard covering the pass criteria, completeness against the available source content, and reviewer edits or enhancements, with the reviewer, date, and rationale recorded and notification to Model Risk Management before production content is regenerated.
+  - Correct the recommender input data underlying the flagged cost phrasing and the affected selling points under that documented review.
+  - Re-establish a valid evaluation methodology against the current corpus, including a corrected Terminal ground-truth mapping, before any future regeneration.
+  - Define the effectiveness score and its intended use in the model documentation and demonstrate with positive and negative cases that the score discriminates between effective and ineffective selling points, including the reasoning behind the assigned values, or remove the score from the model output and from any monitoring reliance.
+  - If the large language model as-a-judge evaluation is retained for performance evidence or monitoring, report all sub-scores with each recorded composite so the composite can be decomposed, and revise the evaluation dimensions to measure factual grounding directly, for example faithfulness, context relevance, and answer relevance, consistent with standard retrieval-augmented generation evaluation practice and with the evaluation the model documentation describes.
+  - Retain generation-time artifacts (inputs, retrieved content, outputs, and configuration) for each production generation event, and identify and record the deployed code version for each generation event, so that future verification is possible.
+  - Ensure all future performance evidence states its environment and run date and is reproducible from retained artifacts.
 
-### 4.1 Tier 1 - High Risk configuration
+  See Sections 4, 7.3, 8.1, 11, and 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The testing evidence provided is insufficient to support the model's performance, and process verification of the reported results could not be completed: the underlying data is no longer available, the results were withdrawn by the model development team during the validation, and the review control has no mechanism to gate what is served. A Moderate Priority Finding is not warranted because no reliable performance evidence produced by the model owner exists for the production environment; the near-term risk in use is contained by Validation's independent review of all served content and banker review before use, which is reflected in the restriction rather than the rating. Therefore, a High Priority Finding is justified.
 
-The application implements the Lumenova Responsible AI (RAI) platform guardrail configuration "Tier 1 - High Risk" (configuration version 1.1, slug tier-1-high-risk-9f36df), the enterprise minimum guardrail policy set for onboarding a Tier 1 high-risk use case. [TBD: state why this use case is Tier 1, referencing the risk tiering assessment.]
+#### 5.4.3 Non-Actionable Findings
 
-Input guardrails. All user inputs pass through pre-processing before reaching the large language model (LLM). Input sanitization detects 20 categories of sensitive entities, including credit card numbers, Social Security numbers (SSN), passport and driver license numbers, bank account numbers, passwords, personal names, phone numbers, email addresses, IP addresses, dates, and locations. A prompt injection detection policy is enabled at a threshold of 0.25, the most sensitive of the three enterprise tiers. In addition, the content filter layer applies an LLM-based prompt injection attacks filter with a filter strength of 0.25, backed by a dedicated LLM configuration ([TBD: identify the LLM model and deployment backing llm_config_id c74d2354-559d-4f13-9945-13c90aa3c0a2]).
+There are no non-actionable Findings in this report.
 
-Sensitive information handling. The sensitive information filter blocks content containing any of the 20 configured personally identifiable information (PII) entity types (action BLOCK, masking mode TAG). No custom regular expression filters are configured. [TBD: state whether use-case-specific regex filters, for example internal account number formats, were added.]
+## 5.5 Other Discussion Items
 
-Content and word filtering. The content filter screens for 15 harmful content categories (violent crimes, non-violent crimes, sex crimes, child exploitation, defamation, specialized advice, privacy, intellectual property, indiscriminate weapons, hate, self-harm, sexual content, elections, code interpreter abuse, and the OpenAI content filter category). A managed profanity word filter is enabled with no custom word list. [TBD: state whether custom words were added for this use case.]
+The following do not represent immediate model risk and are documented for awareness and optional future consideration. Provenance is currently available only in backend logs; exposing source traceability in the user interface would aid banker review and is noted as a future enhancement. Any future use of automated evaluation would require the evaluator design to be revisited; the current large language model as-a-judge evaluator is addressed in the High Priority Finding on Performance of Estimation Method, and the monitoring plan's reliance on it in the Moderate Priority Finding on Monitoring (Section 5.4.2).
 
-Response quality controls. Trust score and coherence score policies are enabled with a BLOCK action at a threshold of 0.75; responses scoring below the threshold are blocked rather than surfaced. The coherence score weights response groundedness at 0.50 and context relevance and response pertinence at 0.25 each, emphasizing that responses must be grounded in retrieved context.
+Validation's code review also noted inactive and residual code segments: retrieval re-ranking boost paths for business size and product type that carry no practical effect (business size for lack of usable chunk metadata, product type for lack of the attribute it keys on; the documentation aspect is addressed in the Moderate Priority Finding on Documentation Transparency and Robustness, Section 5.4.2), request parameters that are accepted but not used, legacy methods retained for test compatibility, commented-out logic, a duplicated metadata-formatting block that emits chunk metadata twice into the generation prompt, and an approval flag stored on each selling point that is not used to control display. These do not materially alter served content. The approval flag in particular is a candidate for future use: if activated, it could condition serving on completed subject matter expert review and provide a technical complement to the documented review procedure. Any cleanup or activation of these paths is at the model owner's election under the change-management process.
 
-Topic scope. Restricted topics operate in RESTRICT (blocklist) mode at a threshold of 0.25. The model refuses queries matching 23 blocked topics, including financial advice, investment recommendations, tax and legal advice, medical advice and diagnosis, politics, religion, weapons, hacking, social engineering, and personal data harvesting. [TBD: confirm the blocklist has been tailored to the use case and list any additions or removals with rationale.]
-
-Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled, meaning all configured policies evaluate the content. [TBD: describe logging, alerting, and human escalation when a block occurs.]
-
-### 4.2 Tier 2 - Moderate Risk configuration
-
-The application implements the Lumenova RAI platform guardrail configuration "Tier 2 - Moderate Risk" (configuration version 1.1, slug tier-2-moderate-risk-f1fe3b), the enterprise minimum guardrail policy set for onboarding a Tier 2 moderate-risk use case. [TBD: state why this use case is Tier 2, referencing the risk tiering assessment.]
-
-Input guardrails. All user inputs pass through pre-processing before reaching the LLM. Input sanitization detects the same 20 sensitive entity categories as the Tier 1 configuration. Prompt injection detection is enabled at a threshold of 0.50. The LLM-based prompt injection attacks filter available in the Tier 1 configuration is not enabled at this tier.
-
-Sensitive information handling. The sensitive information filter takes a mixed approach across the 20 configured PII entity types. Ten entity types are blocked outright (action BLOCK, masking mode TAG): credit card, crypto wallet, email address, IP address, nationality/religious/political group (NRP), password, person name, phone number, medical license, and U.S. bank account number. The remaining ten entity types are masked rather than blocked (action MASK, masking mode REDACT), allowing the conversation to continue with the sensitive value redacted: date/time, device ID, IBAN code, location, URL, U.S. driver license, U.S. Individual Taxpayer Identification Number (ITIN), U.S. passport, U.S. SSN, and vehicle ID. [TBD: document the rationale for masking rather than blocking government identifiers such as SSN and passport at this tier.] No custom regular expression filters are configured. [TBD: state whether use-case-specific regex filters were added.]
-
-Content and word filtering. Identical to the Tier 1 configuration: 15 harmful content categories and a managed profanity filter with no custom words. [TBD: state whether custom words were added for this use case.]
-
-Response quality controls. Trust score and coherence score policies are enabled with an INFORM action at a threshold of 0.50; low-scoring responses are flagged for monitoring rather than blocked. The coherence score weights context relevance, response pertinence, and response groundedness approximately equally (0.3333 / 0.3333 / 0.3334). [TBD: describe who reviews INFORM flags and on what cadence.]
-
-Topic scope. Restricted topics operate in ALLOW (allowlist) mode at a threshold of 0.50. The model responds only to queries matching 26 permitted topics covering customer-service and banking subject areas (account management, billing, troubleshooting, product features, pricing, finance, banking, insurance, investments, loans, mortgages, and related support topics). [TBD: replace or tailor the allowlist to the intended domain of this use case and confirm coverage of legitimate queries that lack obvious in-scope keywords.]
-
-Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled. [TBD: describe logging, alerting, and human escalation when a block occurs.]
-
-### 4.3 Tier 3 - Minimal Risk configuration
-
-The application implements the Lumenova RAI platform guardrail configuration "Tier 3 - Minimal Risk" (configuration version 1.1, slug tier-3-minimal-risk-1de9cd), the enterprise minimum guardrail policy set for onboarding a Tier 3 minimal-risk use case. [TBD: state why this use case is Tier 3, referencing the risk tiering assessment.]
-
-Input guardrails. All user inputs pass through pre-processing before reaching the LLM. Input sanitization detects the same 20 sensitive entity categories as the higher tiers. Prompt injection detection is enabled at a threshold of 0.75, the least sensitive of the three enterprise tiers. The LLM-based prompt injection attacks filter is not enabled at this tier.
-
-Sensitive information handling. The sensitive information filter blocks content containing any of the 20 configured PII entity types (action BLOCK, masking mode TAG), including dates, person names, and locations. [TBD: assess and document the expected false positive impact of blocking dates, names, and locations on legitimate traffic for this use case; see guardrail backtesting in Section 7.2.] No custom regular expression filters are configured.
-
-Content and word filtering. Identical to the higher tiers: 15 harmful content categories and a managed profanity filter with no custom words.
-
-Response quality controls. Trust score and coherence score policies are enabled with an INFORM action at a threshold of 0.50, with approximately equal coherence metric weights, matching the Tier 2 configuration. [TBD: describe who reviews INFORM flags and on what cadence.]
-
-Topic scope. Restricted topics operate in ALLOW (allowlist) mode at a threshold of 0.75, using the same 26-topic customer-service and banking allowlist as the Tier 2 configuration. [TBD: replace or tailor the allowlist to the intended domain of this use case.]
-
-Blocked-content behavior. When any policy blocks content, the user receives the standard message "I'm sorry but I can't help you with that." Early return is disabled. [TBD: describe logging, alerting, and human escalation when a block occurs.]
-
----
-
-## 5. MDD Insert: Guardrail Testing (Template Section 7.2) - Required Evidence Skeleton
-
-The GenAI and Agentic AI Model Development Template Section 7.2 requires the model developer to (1) describe the tests conducted to assess guardrail effectiveness against potential risks and adversarial inputs, covering hallucination detection, toxicity, and adversarial testing, and (2) report guardrail performance testing metrics, results, and conclusions, covering both red teaming (attempts and bypasses) and backtesting on legitimate traffic (false positives and false negatives). Vendor-published benchmarks alone are not sufficient; testing must use U.S. Bank actual input and output data (real or representative production queries and model responses), because vendor benchmarks may not reflect U.S. Bank terminology, content patterns, or user behavior.
-
-The skeleton below covers each enabled policy component. Complete every [TBD] with actual results; delete rows that genuinely do not apply and state why.
-
-### 5.2.1 Testing approach
-
-[TBD: Describe who conducted testing (team, independence from development), the test period, the datasets used (named public attack datasets and/or custom U.S. Bank attack sets), any automated toolkits (e.g., Garak, Adversarial Robustness Toolbox), and the scope of manual expert red teaming. Adversarial testing should go beyond naive single-turn attacks and include multi-turn manipulation, indirect injection via retrieved content, encoding tricks, and non-standard English inputs.]
-
-[TBD: Describe the backtesting dataset: N U.S. Bank production or pilot queries with actual model inputs and outputs, the sampling method, the period covered, and how ground truth labels (harmful versus legitimate; should-block versus should-pass) were assigned and by whom.]
-
-### 5.2.2 Red teaming / adversarial testing results
-
-| Risk category | Test attempts | Successful bypasses | Bypass rate | Severity breakdown | Remediation |
-|---|---|---|---|---|---|
-| Prompt injection (pre-processing detector) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Prompt injection (LLM-based content filter, Tier 1 only) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Jailbreaking | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Data exfiltration (system prompt, training data, PII) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Toxicity (input) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Toxicity (output) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Off-topic / scope escape (restricted topics) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-
-### 5.2.3 Backtesting on U.S. Bank data: confusion matrix per component
-
-For each enabled guardrail component, report a confusion matrix built from actual U.S. Bank input and output data, where "positive" means the guardrail should act (block, mask, or flag):
-
-| Component | True positives (correctly blocked/masked) | False positives (legitimate content blocked/masked) | False negatives (should-block content passed) | True negatives (legitimate content passed) | Precision | Recall | F1 |
-|---|---|---|---|---|---|---|---|
-| PII filter (per entity type where volumes allow) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Prompt injection detection | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Content filter (harmful categories) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Word filter (profanity) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Restricted topics (allowlist/blocklist) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-| Trust score / coherence score (against human quality labels) | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
-
-Report alongside the matrix: total legitimate queries tested [TBD: N], overall false positive rate [TBD]%, overall false negative rate [TBD]%, and the number of harmful or inappropriate outputs that bypassed guardrails end to end [TBD].
-
-### 5.2.4 Failure pattern analysis
-
-[TBD: Document patterns in failures by severity and category (prompt injection, jailbreaking, data exfiltration, toxicity, off-topic). Document common false positives affecting user experience, for example legitimate banking terminology or product names triggering blocks, and any allowlist adjustments made. Document edge cases requiring human escalation. If threshold or action settings were tuned away from the tier baseline as a result, state the change, the rationale, and the retest results. Any deviation from the enterprise tier-minimum baseline must be identified as such.]
-
-### 5.2.5 Safety-utility tradeoff
-
-[TBD: State the balance struck between strictness and utility for this use case, including the rationale for the tier selected and any threshold tuning. For Tier 3 deployments, specifically address the false positive impact of blocking DATE_TIME, PERSON, and LOCATION entities on legitimate traffic. For Tier 2 deployments, address the residual risk of masking rather than blocking government identifiers.]
-
-### 5.2.6 Platform and version reference
-
-[TBD: State the Lumenova platform version, the guardrail configuration name, slug, and version used, whether the configuration matches the enterprise tier baseline exactly or was modified, and reference any enterprise-level testing of the Lumenova platform already completed that this MDD leverages. Confirm how updates to the guardrail configuration will be change-managed and how guardrail performance will be monitored in production, since guardrail testing must not be static-only.]
-
----
-
-## 6. Files in This Pack
-
-- [20260715_Lumenova_Guardrail_Tier_1_High_Risk.json](20260715_Lumenova_Guardrail_Tier_1_High_Risk.json)
-- [20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json](20260715_Lumenova_Guardrail_Tier_2_Moderate_Risk.json)
-- [20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json](20260715_Lumenova_Guardrail_Tier_3_Minimal_Risk.json)
-- This document.
