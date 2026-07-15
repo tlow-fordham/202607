@@ -1,36 +1,47 @@
+# Model-7468 GenAI Selling Points - Initial Validation Weekly Meeting Minutes
 
-slides:
-  - layout: single
-    title: "Production Evaluation Results: Background and Timeline"
-    sections:
-      - bullets:
-          - "The In-App LLM Evaluation Confluence page was shared with Validation on 10/24/2025 and is referenced in the weekly meeting minutes."
-          - "At the time of sharing, the page reported consistent development-stage results (RAG recall@5 average of 34 percent)."
-          - "On 11/08/2025, a production results section was added reporting Average Metrics for 173 Selling Points (recall@1 of 83.65 percent, MRR@1 of 86.96 percent)."
-          - "The account that added the section is now deactivated and displays as Unknown User."
-          - "The figures remain on the current page (last edited 01/07/2026), and the row-level output file was delivered to Validation as evidence."
+**Date:** 07/14/2026
+**Model:** Model-7468 GenAI Selling Points
+**Meeting Type:** Weekly Initial Validation working session
+**Distribution:** Model Owner, Model Development, Validation Team
 
-  - layout: single
-    title: "Validation Recomputation and Open Observations"
-    sections:
-      - heading: "Recomputation"
-        bullets:
-          - "Validation recomputed the averages from the delivered row-level file using the team's own scoring code; every individual row reproduces exactly."
-          - "The recomputed averages are materially lower than the posted values: recall@1 of 9.65 versus 83.65 posted; MRR@1 of 58.96 versus 86.96 posted."
-      - heading: "Open observations"
-        bullets:
-          - "No computational method identified so far reconciles the posted values to the row-level data."
-          - "The decimal portions of all twelve posted values match the recomputed averages exactly, while every integer portion is higher, each in the direction of better performance."
-          - "Several posted values exceed logical bounds: with an average ground-truth set of 6.8 documents, average recall@1 cannot exceed roughly 16 percent even with perfect retrieval."
-          - "The posted values violate required rank ordering: recall and MRR cannot decrease as k increases, yet posted recall@1 and MRR@1 exceed their @3 and @5 values."
+## Attendees
 
-  - layout: single
-    title: "Validation Requests"
-    sections:
-      - bullets:
-          - "The script or spreadsheet that produced the posted Average Metrics, to reconcile the posted values to the row-level file. [Carl]"
-          - "The rag_evaluation.jsonl logs underlying the development-stage results table. [Carl]"
-          - "The run date and provenance of the delivered CSV, the knowledge base version it ran against, and reconciliation of the 173-row population to the 172 cached selling points. [Carl]"
-          - "Current ownership of the evaluation page, and the identity and role of the account that added the production section. [Bhavya]"
-          - "Provenance of the SME row-level testing results: reviewer, dates, methodology, and delivery chain. [Bhavya]"
-          - "The final and complete set of performance evidence for the model, with confirmation that no other versions supersede it. [Bhavya]"
+- Validation (MRM): Aditi Pandey, Jordan Low, Xinyu Wu
+- Model Owner / Model Development: Bhavya Reddy (Model Owner), Carl Huang (Model Developer)
+
+## Milestones and Schedule
+
+- Validation noted the new Enterprise Model Assessment lists an expected production date of 08/17/2026 while the pilot ends 08/14/2026. The model owner explained the Monday date was used because 08/15/2026 falls on a weekend. The dates will be aligned consistently across documents.
+- The model owner will send the updated Model Development Document and Monitoring Plan, incorporating responses to Validation's Important comments, following the meeting, and will upload the current documents to Archer.
+- Validation confirmed the document versions received as of this meeting are the versions the validation report will be written against.
+
+## Performance Evidence
+
+- The Model Development Document and Monitoring Plan reference retrieval performance metrics (recall, precision, and related ranking metrics). Because these metrics are part of the submitted documentation, Validation reviewed the supporting results on the model development team's evaluation Confluence page, which was provided to Validation during the engagement and is referenced in prior meeting minutes.
+- Validation recomputed the twelve aggregated retrieval metric values published on the page (recall, precision, MRR, and nDCG at k of 1, 3, and 5) directly from the team's row-level evaluation file and could not reconcile them: the recomputed values are materially lower (for example, recall@1 of 9.65 versus 83.65 published, and MRR@1 of 58.96 versus 86.96 published), and several published values lie outside the feasible range of the stated metrics. Validation also re-ran the team's evaluation script and reproduced the same row-level file.
+- The model developer stated that the retrieval evaluation reflects the lower environment and prior-year data, that the golden dataset was built against the lower-environment document chunks, and that the underlying development data is no longer available, so the results cannot be reproduced.
+- The model developer stated that the production results section of the evaluation page, including the published aggregated values, was added without his knowledge by an employee who is no longer with the team, is not accurate for production, and should be disregarded, and that the row-level evaluation spreadsheet should also be disregarded. The model developer stated that the quantitative scores available for production are the context similarity or effectiveness score and the LLM critique score; retrieval metrics are not available for production.
+- Validation requested that no changes be made to the performance content of the evaluation page, as it is the version referenced by the validation. Identified gaps will be recorded as Findings; the model development team may investigate afterwards, including whether specific results are false positives.
+- Validation presented two options under the streamlined validation process: revise and reconcile the documentation with a corresponding timeline adjustment, or proceed to completion on the evidence as provided as of this meeting. The model owner and model development team elected to proceed on the current evidence.
+- Validation confirmed how the review proceeds from here: gaps are recorded as Findings and remediated through the standard finding remediation process, no rework or evidence resubmission occurs during the validation window, and Validation will ask clarification questions where needed and will not be requesting new information or additional testing.
+
+## Subject Matter Expert Review Spreadsheet
+
+- Validation noted that the effectiveness score in the review spreadsheet is 0.92 on all generated rows (one row at 0.95; the three static entries are not generated) and asked how the score is produced. The model developer stated the score is generated by the LLM when the selling point is created and will confirm the mechanism and the reason the values are uniform.
+- Validation noted that the review spreadsheet displayed the system's automated scores (the effectiveness score and the LLM critique) alongside each selling point during the review; the model owner acknowledged this as a process gap in the review setup.
+
+## Retrieval Flow Clarifications
+
+Validation walked through its understanding of the retrieval flow; the model developer provided clarifications, including: document entity links are created by an LLM call with a confidence score assigned at link creation; embedding-search results carry a base similarity score, with the higher score kept where a chunk appears in both paths and no normalization currently applied between the two score types; a product-family filter separates the money movement and payment solutions families; a 10 percent multiplicative boost applies to chunks mentioning the selected plans or features; boosting is otherwise limited to document type and recency, and chunk metadata is not collected or used; and the top 10 selected chunks are passed to the LLM with the customer profile for generation.
+
+## Action Items
+
+- Bhavya: send the updated Model Development Document and Monitoring Plan; upload current documents to Archer.
+- Bhavya / Carl: align the Enterprise Model Assessment production date with the pilot end date across documents.
+- Carl: confirm the mechanism generating the effectiveness score and the reason the values are uniform (clarification).
+- Carl: provide the current master-branch code for the retrieval and boosting logic (clarification of existing evidence).
+
+## Items Deferred
+
+- No items deferred. Validation has no further questions at this time; remaining items will be addressed through the validation report and Findings.
