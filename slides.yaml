@@ -32,7 +32,7 @@ The model has no upstream or downstream models. Its inputs are data: customer at
 
 **Key Assumptions and Limitations**
 
-The principal assumptions, limitations, and weaknesses are summarized in Section 3 and assessed in Sections 7.5, 8, and 12.
+Output quality depends on the accuracy and currency of the knowledge base and of the product database descriptions injected into the generation prompt. Generative phrasing varies within the bounds set by the low temperature and the cache. Domain coverage is limited to the documented products. In use, provenance is not exposed to the banker in the user interface, and the captured feedback is oriented to the product recommendation, which limits the selling-point quality signal. The outcome-material items are listed in Section 3, and the assessments are in Sections 7.5, 8, and 12.
 
 ---
 Sources: MDD Sections 3.1-3.2, 4.1, 5, 6.1-6.2; sample outputs (products and output structure); IV readiness assessment.
