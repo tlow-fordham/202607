@@ -4,7 +4,9 @@ Internal working draft. Component of the Model-7468 GenAI Selling Points Initial
 
 ## 10.1 Development Document Review and Model Change Management
 
-The model documentation describes the model's architecture, data, construction, and guardrails, and defines the material-versus-minor model change categories. Under those definitions, a change in the foundation model, significant prompt or constraint changes, changes to retrieval methodology, changes to guardrails, and the addition of new product domains are material and require prior Model Risk Governance (MRG) review.
+**Overall documentation quality and completeness**
+
+The Model Development Document follows the appropriate MRG template version, the Model Development Document Template v3.0 (October 2023), and is signed by the appropriate parties. The documentation describes the model's architecture, data, construction, and guardrails.
 
 **Validation Comments:**
 
@@ -16,17 +18,25 @@ The documentation is adequate to support the review, but does not fully reflect 
 - The feedback streams collected and the per-environment generation and cache-change governance.
 - The effectiveness score and the evaluation descriptions, the Estimation Method Assessment identifier, and residual drafting artifacts.
 
-These are enumerated with the corresponding corrections in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4 of this validation report). Individually correctable, collectively they indicate that the documentation does not fully reflect the model as built.
+These are enumerated with the corresponding corrections in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4 of this validation report). Individually correctable, collectively they indicate that the documentation does not fully reflect the model as built. Because the documentation alone was not sufficient for the assessment, Validation collected significant additional development information, including the production and ingestion code, the prompt configurations, the evaluation artifacts, and the row-level production outputs; these are identified among the documents reviewed in Section 2, and the assessment is grounded on those artifacts, with the corresponding documentation corrections requested in the Finding.
 
-Validation considers the material-change definitions appropriate. Because the model's outputs are grounded in the knowledge base and the curated elavonSellingPoints.xlsx source carries the largest retrieval boost, an update to that source or to the knowledge base can directly change outputs; Validation's position is that such updates should be treated as material. The gap in the change-management definitions is raised in the Documentation Transparency and Robustness Finding, and the changes made to production content during the pilot without a new submission to Model Risk Management are addressed in the High Priority Finding on Performance of Estimation Method (Section 5.4).
+**Model change management**
 
-## 10.2 Model Change Review
-
-As an initial validation of a new model, a post-production model change review is not applicable, as there is no prior validation against which to assess changes. Changes made during development and the pilot, including the serving-design change to pre-generated cached content, the Talech-to-Elavon rebranding, and the cache regeneration, are assessed within this validation; the changes made to production content during the pilot without a new submission to Model Risk Management are addressed in the High Priority Finding on Performance of Estimation Method (Section 5.4).
+The documentation defines the material-versus-minor model change categories. Under those definitions, the material changes are a change in the foundation LLM, significant modifications to prompt structure, logic, or constraints, changes to retrieval methodology (including the embedding model, chunking strategy, and ranking logic), changes to guardrails, compliance logic, or output controls, and the addition of new product domains or large-scale updates to knowledge base content; material changes require prior Model Risk Governance (MRG) review, updated documentation, and additional testing before production deployment. Incremental knowledge base updates within existing domains, minor prompt wording adjustments, small configuration changes, and routine data or document refreshes are classified as minor, tracked through internal change logs without prior MRG approval.
 
 **Validation Comments:**
 
-Validation noted several changes the Model Owner (MO) should expect to manage under the change-management process going forward. The production deployment uses a preview version of the provider's interface (Azure OpenAI API version 2025-04-01-preview); preview versions can change in behavior or be deprecated, so the management of the interface version should be addressed. A change of the foundation model serving any of the model's functions, whether generation, product-to-chunk link extraction, or the automated evaluation, is a material change under the document's own definitions and requires a separate validation activity before changed content is served; a notification and validation path for such a change should be documented. Validation's position is that a change of the embedding model warrants the same treatment, because it changes every stored document vector and the retrieval behavior. The MO should confirm whether any changes are expected before the next validation activity.
+Validation considers the material-change definitions appropriate in coverage, including their explicit treatment of the embedding model within retrieval-methodology changes. The definitions classify knowledge base updates by scale, with large-scale updates material and incremental updates minor, and Validation identified two gaps in that classification. First, the threshold between incremental and large-scale is not defined, and because the curated elavonSellingPoints.xlsx source carries the largest retrieval boost, an incremental update to that source can directly change served outputs while classified as minor; Validation's position is that updates to the curated source should be treated as material. Second, the definitions do not address the regeneration of production content, the event through which any content change reaches serving. These gaps are raised in the Documentation Transparency and Robustness Finding, and the changes made to production content during the pilot without a new submission to Model Risk Management are addressed in the High Priority Finding on Performance of Estimation Method (Section 5.4).
+
+Validation also noted changes the Model Owner (MO) should expect to manage under these definitions going forward. The production deployment uses a preview version of the provider's interface (Azure OpenAI API version 2025-04-01-preview); preview versions can change in behavior or be deprecated, so the management of the interface version should be addressed. A change of the foundation model serving any of the model's functions, whether generation, product-to-chunk link extraction, or the automated evaluation, is material under these definitions and requires a separate validation activity before changed content is served; a notification and validation path for such a change should be documented. A change of the embedding model is likewise material under these definitions, which name the embedding model within retrieval-methodology changes; it changes every stored document vector and the retrieval behavior. The MO should confirm whether any changes are expected before the next validation activity.
+
+**Ongoing recalibration and refitting schedule**
+
+The model is static, with no automatic recalibration or retraining. The EMA maintenance section records the model as subject to annual updates, and the knowledge base is refreshed on demand in an event-driven manner when documents are uploaded or removed, with no scheduled batch re-indexing; the production cache is regenerated accordingly (Section 4). Validation has no concerns with the stated schedule. The governance of regeneration events is addressed under Model change management above.
+
+## 10.2 Model Change Review
+
+This section is not applicable to initial validations under the governing template, as there is no prior validation activity against which to assess post-implementation changes. The changes made during the pilot period, including the serving-design change to pre-generated cached content, the Talech-to-Elavon rebranding, and the cache regeneration, are assessed within this validation (Sections 5.2 and 5.4).
 
 ## 10.3 Model Inventory and EMA Review
 
@@ -41,16 +51,18 @@ General EMA Information:
 | Item | Value |
 |---|---|
 | EMA ID(s) reviewed | 68224437 |
-| Date EMA was submitted by Model Owner | 07/06/2026 |
-| MRG Review Decision | Pending review (target review date 08/05/2026) |
+| Date EMA last submitted by Model Owner | 07/06/2026 |
+| MRG Review Status | Pending review (target review date 08/05/2026) |
 | MRG Acceptance Date | Not available (pending review) |
 
 | Archer Application/Section | Outcome of Review | Updates required, if applicable |
 |---|---|---|
+| **Inventory Record - General Information** | | |
 | System or Umbrella Association | Accurate | None; no estimation method system, consistent with Section 9. |
 | Currently in Production Use | Accurate | "Yes" reflects the current pilot use in the production environment. |
-| Actual Date of Production Use | Accurate | 04/15/2026 is the pilot period start date. |
+| Actual Date of Production First Use | Accurate | 04/15/2026 is the pilot period start date. |
 | Estimation Method Assessment: Internal or External | Accurate | Internal; the framework was built internally and calls the externally developed foundation models through the enterprise gateway (Section 7.2). |
+| **Method Assessment Tab** | | |
 | Estimation Method Version | Accurate | None. |
 | Estimation Method Change Description (for Change EMAs) | Not applicable | This is not a change EMA. |
 | Downstream Estimation Method Dependency | Accurate | None recorded, consistent with Sections 4 and 9. |
@@ -60,8 +72,8 @@ General EMA Information:
 | Estimation Method Developer(s) | Updates required | The field is blank; the Model Developer is to be recorded. Raised in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4). |
 | Estimation Method Production Platform | Accurate | The recorded production data sources are the Business Banking AI Platform and the enterprise gateway, and the recorded input data source is the Business Banking Salesforce application. |
 | Primary Estimation Method Category | Accurate | None. |
-| Estimation Method Methodology - General | Accurate | None. |
-| Estimation Method Methodology - Description | Accurate | The legacy Feature-Benefit-Need (FBN) mapping reference is replaced with feature-plan mapping, and inputs are recorded as customer attributes (industry, sub-industry, product, and revenue). |
+| Estimation Method Methodology General | Accurate | None. |
+| Estimation Method Methodology Detailed | Accurate | The legacy Feature-Benefit-Need (FBN) mapping reference is replaced with feature-plan mapping, and inputs are recorded as customer attributes (industry, sub-industry, product, and revenue). |
 | AI/ML | Accurate | The artificial intelligence and machine learning and generative artificial intelligence designations are recorded, the methodology is recorded as a large language model, and the foundation models are identified as GPT-4o and text-embedding-ada-002, accessed through the enterprise generative AI gateway. |
 | Static or Dynamic | Accurate | Static, consistent with the static and cached production pathway (Sections 4 and 10.1). |
 | Estimation Method Business Purpose and Usage | Accurate | None. |
@@ -69,14 +81,15 @@ General EMA Information:
 | Degree of Manual Review of Estimation Method Output | Accurate | None. |
 | Customer Impact Section | Accurate | The record states that no personally identifiable information is used and that the method is internal. |
 | Financial Impact Section | Accurate | None. |
-| Estimation Method Maintenance Section | Updates required | The change definition recorded in the EMA ("For the Gen AI Selling Points model, only if new data sources are added which dynamically triggers the selling points generation will be considered as material model change. Everything else will be BAU.") does not align with the model documentation's change-management definitions. Raised in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4). |
+| Estimation Method Maintenance Section | Updates required | The section records the model as static and subject to annual updates. The change definition recorded in the EMA ("For the Gen AI Selling Points model, only if new data sources are added which dynamically triggers the selling points generation will be considered as material model change. Everything else will be BAU.") does not align with the model documentation's change-management definitions. Raised in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4). |
+| **Inventory** | | |
 | Downstream Estimation Methods | Accurate | None recorded, consistent with Sections 4 and 9. |
 | Upstream Estimation Methods | Accurate | None recorded; the model's inputs are data (Section 4). |
 
-**Validation Comments:**
+**Additional Validation Commentary:**
 
 Validation noted that the change definition recorded in the submitted EMA treats only the addition of new data sources that dynamically trigger selling-point generation as a material change, with all other changes classified as business as usual, while the model documentation defines a broader set of material changes (Section 10.1). Validation accepts the documentation's definitions as the governing change-management definitions for this validation. Three EMA corrections are requested under the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4): populate the Estimation Method Developer field, align the EMA change definition with the model documentation, and correct the description of the effectiveness score as an input to prompt refinement, a use that is not evidenced.
 
 ---
 Sources: MDD Section 10, Tables 1-3; Archer (MO, EMA, risk rating); 07/06/2026 EMA Archer export (full-production submission, saved 20260709); deployed configuration (API version, platform); Governance change-management requirements; IV readiness assessment; 06/18 MO confirmations.
-Gaps: documentation update to match the deployed system (Documentation Transparency Finding, Section 5.4); MRG review outcome of the full-production EMA [TBD] (target 08/05/2026; FRBD review triggered per the record); MDD accepted as primary evidence for change-management definitions; EMA change-definition update to align with the MDD [TBD]; stakeholder roles per the EMA: MRO Melissa DeNembo, MRG contact Damien Traore; remaining stakeholder confirmation [TBD]; preview API-version management and foundation-model change path [TBD]; EMA identifier confirmed as 68224437 per Archer (Aditi, 07/09). The MDD cites the pilot-era identifier EMA - 66885813 (Jordan verified against the source 07/13; the EMA - 00000312 in earlier drafts was a transcription error, corrected in the transcription copy); the stale reference is a Documentation Transparency item. History in Non_Findings_and_Discharged_Items.md.
+Gaps: Table 6 labels conformed to the template transcription except "Automatic Decisioning Without Manual Intervention," where the transcription reads "Decommissioning," judged a transcription artifact of the Archer field name (verify against the published template at assembly); documentation update to match the deployed system (Documentation Transparency Finding, Section 5.4); MRG review outcome of the full-production EMA [TBD] (target 08/05/2026; FRBD review triggered per the record); MDD accepted as primary evidence for change-management definitions; EMA change-definition update to align with the MDD [TBD]; stakeholder roles per the EMA: MRO Melissa DeNembo, MRG contact Damien Traore; remaining stakeholder confirmation [TBD]; preview API-version management and foundation-model change path [TBD]; EMA identifier confirmed as 68224437 per Archer (Aditi, 07/09). The MDD cites the pilot-era identifier EMA - 66885813 (Jordan verified against the source 07/13; the EMA - 00000312 in earlier drafts was a transcription error, corrected in the transcription copy); the stale reference is a Documentation Transparency item. History in Non_Findings_and_Discharged_Items.md.
