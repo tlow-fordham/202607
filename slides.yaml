@@ -1,48 +1,210 @@
-Internal working draft. Component of the Model-7468 GenAI Selling Points Initial Validation report. Part I.
+Internal working draft. Component of the Model-7468 GenAI Selling Points Initial Validation report. Part II.
 
-# 4 Modeling Framework and Business Uses
+# 7 Model Data and Conceptual Soundness
 
-**Model objective and usage**
+## 7.1 Development Data
 
-Model-7468 GenAI Selling Points is an internally developed new model consisting of a single estimation method under one Model ID, with no sub-models or segments. It generates personalized, product-specific selling points for Business Banking customers from customer attributes and underlying product documentation, supporting Sales and Business Banking teams. The model replaces a manual process in which selling points were written by hand from standard copy templates; there is no incumbent automated system performing this function.
+The knowledge base consists of nine internal product documents, segmented into 32 chunks, comprising six back office documents (customer database and loyalty, employee management, integrations, inventory management, invoices, and reports) and three solution sheets (restaurant, retail, and service). Customer attributes, namely industry (North American Industry Classification System, or NAICS), sub-industry, and revenue, are sourced from the ELZ data store. The reported evaluation dataset comprises 172 queries with labeled product and document associations, and production evaluation draws on application programming interface (API) transactions with generated outputs.
 
-The business line's stated objective for the model is to improve on the manual process in four respects:
-1. Personalizing messaging at scale across diverse customer profiles.
-2. Grounding selling points in current product capabilities through retrieval-augmented generation.
-3. Maintaining consistency with compliance and brand standards.
-4. Reducing the operational effort of manual selling-point creation.
+**Table 7.1 - Scope and data volume.**
 
-Outputs are internal-facing. They are surfaced to bankers within the Salesforce recommendation workflow through an application programming interface (API), and the model does not interact with customers. The scope covers Business Banking customers across the supported industries and revenue bands, mapped to the three documented Elavon payment products. The knowledge base is a small set of product documents (generic Talech documents rebranded to Elavon during processing) together with a curated selling-points source. The model is currently in pilot use from 04/15/2026 through 08/14/2026, restricted to approximately 15 percent of the bankers; per the Model Owner (MO), full launch will expose the model to 527 bankers, nationwide within the United States. The model serves Business Banking customer segments defined by industry (North American Industry Classification System, or NAICS), sub-industry, and revenue band, producing 172 model-generated selling points. The customer and segment counts, the data statistics, and the segment-to-product mapping are set out in Section 7.1 of this validation report.
+| Item | Count | Notes |
+|---|---|---|
+| Business Banking customers in scope | under 100,000 | eligible Business Banking customers meeting the industry and revenue criteria, drawn from a larger small-business universe |
+| Customer segments | 186 total; 172 generate a selling point, 14 do not | 186 from the post-rebrand mapping file, with no blanks or duplicates; Validation derived the 172/14 split from the recommender and NAICS mapping files, and the mapping-data documentation gap is raised in the Documentation Transparency and Robustness Finding (Section 5.4) |
+| Cached selling points | 172 | one per generating segment |
+| Evaluation queries | 172 | one per generating segment |
+| Knowledge base documents | 9 | generic Talech product documents; the brand change to Elavon is applied at the code level during processing, and the source documents remain Talech-branded |
+| Curated selling-point examples | 6 | elavonSellingPoints.xlsx (formerly talechSellingPoints.xlsx); receives the largest retrieval boost |
+| Knowledge base chunks | 32 | includes all sources, the nine product documents and the curated example selling points; the documentation states 28 (Documentation Transparency and Robustness Finding, Section 5.4) |
 
-The scope of this Initial Validation is the model's generation of selling points for the three Elavon products, namely Elavon Mobile, Elavon Terminal, and Elavon Register. Three additional selling points for money-movement products, namely Bill Pay, Payroll, and Enhanced Payments, were compiled by subject matter experts and are stored as static entries in the PostgreSQL database with their own product identifiers; they were added under the Special Purpose Validation extension and are presented directly in the Salesforce interface without passing through the model's generation process. These money-movement selling points are out of scope for this validation and are not assessed in the sections that follow.
+**Table 7.2 - Recommender mapping and output distribution across the 186 segments.**
 
-**Model framework**
+| Item | Count | Distribution across the 186 segments |
+|---|---|---|
+| Revenue bands (input) | 3 | under $50,000; $50,000 to $500,000; $500,000 to $2.5 million |
+| Industries (input) | 4 | Other 64; Retail 63; Services 47; Restaurants 12 |
+| Sub-industries (input) | 67 | per the post-rebrand mapping document |
+| Recommended products (output) | 3 | Elavon Mobile 94; Elavon Register 53; Elavon Terminal 39 |
+| Plans (output) | 3 | Free 133 (Mobile, Terminal); Standard 30 and Premium 23 (Register) |
+| Features per segment (output) | 5 (from a set of 8) | see Table 7.3 |
 
-The model uses a hybrid architecture that combines a deterministic product recommender, a retrieval-augmented generation (RAG) component, a foundation large language model (LLM) for generation, and a production cache (see Figure 4.1). At a summary level, a selling point is produced in six steps, detailed in Section 7.3:
-1. The deterministic recommender maps the customer's industry (NAICS), sub-industry, and revenue band to a recommended product, plan, and five features through the predefined mapping table, so identical inputs produce identical product selections.
-2. A fixed query template assembles the customer attributes and general product information into a standardized retrieval query; the recommended plan and feature details are excluded from this query and enter at re-ranking.
-3. The retrieval query is embedded with the text-embedding-ada-002 model and compared against the product-document chunks in the PostgreSQL vector database; this dense search is supplemented by the stored product-to-chunk links, which GPT-4o creates at document ingestion by scoring each chunk's relevance to each product.
-4. The combined chunk set is re-ranked by a multi-factor relevance score, and a final subset is passed to generation.
-5. GPT-4o, accessed through the enterprise generative AI gateway with no fine-tuning, generates the selling point from a generation prompt assembled separately from the retrieval query; the generation prompt includes the retrieved chunks and the product name and description from the product database.
-6. Each output is a structured selling point, comprising a headline, a subheader, a body, bullet points, an optional disclaimer, the citation identifiers of the documents supplied to generation (Section 8.4), and an effectiveness score, and is served in production from the cache.
+**Table 7.3 - Feature distribution across the 186 segments.**
 
-The pipeline uses four distinct prompt and template texts: in pre-processing (the ingestion-time link extraction noted in step 3), retrieval (the query template in step 2), generation (the generation prompt in step 5), and evaluation (outside the serving flow above). They are named and distinguished in Section 7.3.
+| Feature | Segments |
+|---|---|
+| Surcharge | 186 |
+| Employee Management | 186 |
+| Customer Management | 182 |
+| Tap to Pay | 158 |
+| Invoice | 119 |
+| Advanced Catalog | 53 |
+| House Accounts | 34 |
+| Online Ordering | 12 |
 
-[TBD - insert the corrected architecture diagram, adapted from the model documentation to include the production cache]
+Segments are defined by three attributes: revenue band, industry, and sub-industry. They are drawn from the post-rebrand mapping document (Product Recommendation - After Rebrand.xlsx), which contains 186 segment rows. Each segment maps deterministically to one product, one plan, and five features drawn from a set of eight. The mapping dimensions and the product and plan distribution are shown in Table 7.2, the feature distribution in Table 7.3, and the revenue-band by industry breakdown in Table 7.4. Of the 186 segments, 172 generate a cached selling point and 14 do not (Table 7.1 of this validation report).
 
-**Figure 4.1 - Model-7468 GenAI Selling Points end-to-end architecture.** The diagram presents the model in four phases: document pre-processing (document parsing, text chunking and embedding with text-embedding-ada-002, and document metadata extraction using GPT-4o, stored in the PostgreSQL database); the product recommender (a recommender interface and recommendation engine driven by the parsed product-recommendation mapping document and the customer profile); the selling points generator (template assembly, query embedding with text-embedding-ada-002, database query, context assembly, generation using GPT-4o, post-processing, and the response, which in production is served through the production cache); and feedback and analytics (display, and the collection, storage, and analysis of ratings, thumbs up or down, and comments). The model uses the same foundation model, GPT-4o, for product-to-chunk link extraction and generation (the diagram's document metadata extraction branch is coded but not used in production), and text-embedding-ada-002 for both document and query embedding.
+**Table 7.4 - Segment distribution by revenue band and industry (from the post-rebrand mapping document).**
 
-The production pathway is cached at serve time. Product recommendations are fixed for each customer segment, and previously generated selling points are returned from a cache keyed by customer segment. Content is generated by the model within each environment, at startup and on regeneration events, and when no cached output exists for a segment. The model is static in the sense that no automatic recalibration or retraining occurs; content generation nonetheless occurs within the production environment as described above. The knowledge base is refreshed on demand, in an event-driven manner when documents are uploaded or removed, with no scheduled batch re-indexing, and the cache is regenerated accordingly.
+| Revenue band | Other | Restaurants | Retail | Services | Total |
+|---|---|---|---|---|---|
+| Under $50,000 | 24 | 4 | 22 | 17 | 67 |
+| $50,000 to $500,000 | 23 | 4 | 21 | 16 | 64 |
+| $500,000 to $2.5 million | 17 | 4 | 20 | 14 | 55 |
+| Total | 64 | 12 | 63 | 47 | 186 |
 
-**Overall Modeling System**
+The columns of the Product Recommendation Mapping spreadsheet are described in Table 7.5.
 
-The model has no upstream or downstream models. Its inputs are data: customer attributes are sourced from the ELZ data store, the source system as named in the model documentation, and the recommender mapping is a configured lookup. The downstream consumer is the Salesforce banker workflow, a user-facing system, in which a banker reviews the selling point before use but cannot modify it, as the generated selling points are controlled upstream. The structured feedback collected is oriented to the product recommendation (thumbs up or down, with preset reject reasons); the free-text field can carry comments on either the recommendation or the generated selling point, and banker feedback is sparse. Because there are no interconnected models, no model system applies (Section 9).
+**Table 7.5 - Product Recommendation Mapping spreadsheet columns.**
 
-**Key Assumptions and Limitations**
+| Column | Description | Values |
+|---|---|---|
+| annual revenue | Annual revenue category of the client | under $50k; $50k to $500k; $500k to $2.5M |
+| industry | Industry of the client | Restaurants, Retail, Services, Others |
+| subindustry | Sub-categorization of the client industry | for example Arts, Hospitals, Pet Stores |
+| Primary Product | The recommended product, one of three | Elavon Register, Elavon Terminal, Elavon Mobile |
+| Plan | The recommended product plan | Free, Standard, Premium |
+| Feature 1-5 | The recommended features for the product and customer segment, provided to the LLM for selling-point generation | Tap to Pay, Surcharge, Customer Management, Invoice, Employee Management, Advanced Catalog, Online Ordering, House Accounts |
 
-Output quality depends on the accuracy and currency of the knowledge base and of the product database descriptions injected into the generation prompt. Generative phrasing varies within the bounds set by the low temperature and the cache. Domain coverage is limited to the documented products. In use, provenance is not exposed to the banker in the user interface, and the captured feedback is oriented to the product recommendation, which limits the selling-point quality signal. The outcome-material items are listed in Section 3, and the assessments are in Sections 7.5, 8, and 12.
+The representativeness of the data across segments is reflected in the revenue-band by industry distribution in Table 7.4. A visualization of this distribution, and of the cached selling points across the same dimensions, is to be provided by the Model Owner (MO):
+
+[Figure 7.1 - Visualization of the segment and cached-selling-point distribution across revenue bands and industries, from Table 7.4: TBD.]
+
+On data quality and governance, the documentation describes subject matter expert content validation prior to ingestion, handling of null and invalid content, deduplication of overlapping table and text content, and retrieval-coverage checks, and states that all product types and all segment combinations are represented and that no token truncation was observed.
+
+**Validation Comments:**
+
+Validation reviewed the development data as documented in the Model Development Document and performed the checks below.
+
+Validation's review of the segment mapping found all 186 rows fully populated, with no blank product, plan, industry, sub-industry, or revenue-band values and no duplicate segment combinations, consistent with a clean deterministic mapping. Validation derived the 172 generating versus 14 non-generating split independently from the recommender and NAICS mapping files: the 14 non-generating segments sit in six sub-industries with no usable NAICS code (four sub-industries carry a blank code in the mapping file and two appear in no mapping row), so they cannot be resolved by NAICS lookup and do not generate. The documentation does not describe this mapping data, which is raised in the Documentation Transparency and Robustness Finding (Section 5.4 of this validation report).
+
+Validation calculated the word counts for the nine product documents. The nine documents are short, ranging from 126 to 404 words (approximately 170 to 540 tokens at the standard approximation of roughly 0.75 words per token). The Model Developer (MD) provided the chunk-level word-count distribution (Figure 7.2). All 32 chunks are under 500 words (approximately 670 tokens), distributed as 2 chunks under 100 words, 17 in the 100-to-200 word range, 8 in 200-to-300, 4 in 300-to-400, and 1 in 400-to-500. These are well within the embedding model's input limit of approximately 8,191 tokens (Section 7.2 of this validation report) and far within GPT-4o's 128,000-token context window, so truncation risk is negligible. The small size of the knowledge base supports source-grounded review, because generated claims can be compared against the full set of source documents at the document level.
+
+[Figure 7.2 - Distribution of knowledge base chunk token counts relative to the model context window: TBD - insert image.]
+
+The 172 selling points are the full set of generated outputs, one per generating segment.
+
+The current development-data inventory understates the sources and processing. The nine documented files are generic Talech product documents, and a code-level search-and-replace during processing rebrands the terminology to Elavon, which accounts for the Elavon products in the outputs. Two further sources feed the model, the product-recommendation mapping document (186 segment rows) and the curated selling-point examples, elavonSellingPoints.xlsx (six examples), which receive the model's largest retrieval boost (Section 7.3) and are therefore the most-favored retrieval input. Both were reviewed at the Provisional Approval, the curated examples then as talechSellingPoints.xlsx. Documenting them in the current data inventory in their Elavon form is requested under the Documentation Transparency and Robustness Finding (Section 5.4).
+
+Because the outputs depend on rebranded content, Validation assessed the Talech-to-Elavon search-and-replace. A search for "Talech" in the current selling points returns no results, indicating the replacement is complete. Content accuracy of the rebranded outputs is assessed through Validation's independent faithfulness review of the full cached population (Section 8.1).
+
+Validation has no concerns with the described data quality controls for a knowledge base of this size.
+
+## 7.2 Model Framework and Theory
+
+The model's design combines a deterministic recommender for product selection, a retrieval-augmented generation (RAG) component for content, and a production cache for stability, as described in Section 4 and detailed in Section 7.3 of this validation report.
+
+[INSERT IMAGE HERE: Model-7468 GenAI Selling Points end-to-end architecture]
+
+**Figure 7.3 - Model-7468 GenAI Selling Points end-to-end architecture** (also depicted at a summary level in Figure 4.1). [TBD - insert image.] The diagram shows the full pipeline: document ingestion and embedding, deterministic product recommendation, retrieval-augmented selling-point generation with GPT-4o, cache-based production serving, and the banker feedback loop. The document metadata extraction branch shown in the diagram is coded but does not populate usable values in the current production configuration (Section 5.4).
+
+[INSERT IMAGE HERE: Model-7468 retrieval-augmented generation workflow schematic]
+
+**Figure 7.4 - Conceptual retrieval-augmented generation workflow.** [Schematic of the pipeline: deterministic recommender, retrieval query assembly from the fixed query template, query embedding with text-embedding-ada-002, dense vector and entity-link retrieval over the PostgreSQL and pgvector store, multi-factor re-ranking, generation with GPT-4o, and return through the production cache. To be provided by the MO, or adapted from Figure 4.1 with the retrieval and re-ranking steps expanded.] [TBD - insert diagram]
+
+The model uses two externally developed foundation models from the same provider, accessed through Azure OpenAI by way of the enterprise generative AI gateway, with no fine-tuning. GPT-4o is the large language model (LLM) used for product-to-chunk link extraction during pre-processing and for selling-point generation; its coded document metadata extraction role is not used in production (Section 7.3). The text-embedding-ada-002 model is the embedding model used to represent both the product-document chunks and the query for retrieval, producing 1,536-dimension vectors. The same two models therefore serve multiple steps of the pipeline shown in Figure 4.1. Because both models come from a single external provider and serve more than one stage, a change to either model would affect multiple pipeline stages. The change-management treatment of such a change is addressed in Section 10.1.
+
+GPT-4o is a proprietary, closed-source foundation model developed by OpenAI. It is a transformer-based, general-purpose, instruction-following generative model trained on a large and diverse corpus of publicly available and licensed text, with additional multimodal training. OpenAI does not publicly disclose the composition or size of the training corpus, the parameter count, or the training methodology. GPT-4o supports structured output (the application is configured to return JavaScript Object Notation, or JSON), multilingual text, and summarization and synthesis. Its published specifications are an input context window of 128,000 tokens, a maximum output of 4,096 tokens for the base model and up to 16,384 tokens for later snapshots, and a training knowledge cutoff of October 2023. The documentation states the maximum output tokens as 25,000 in the narrative and 2,000 in a configuration block.
+
+GPT-4o performs competitively on public benchmarks for general knowledge, reasoning, instruction-following, and text generation. Table 7.6 presents the Massive Multitask Language Understanding (MMLU) benchmark, a context-based multiple-choice evaluation covering 57 academic and professional subjects, assembled by Validation from publicly available sources.
+
+**Table 7.6 - Published benchmark standing of GPT-4o (assembled by Validation from public sources).**
+
+| Benchmark | Capability measured | GPT-4o | Comparator(s) |
+|---|---|---|---|
+| MMLU | General knowledge and reasoning | 88.7% | Mixtral 71.7%; Llama 2 69.5% |
+
+The text-embedding-ada-002 model is a general-purpose retrieval embedding model, also developed by OpenAI and accessed through the same gateway, that maps text to 1,536-dimension vectors with a published maximum input of approximately 8,191 tokens, well above the configured 4,000-character chunk size. It embeds both the product-document chunks at ingestion and the assembled query at retrieval time, so that similarity is computed in a single shared vector space.
+
+Both models are reached only through U.S. Bank's enterprise generative AI gateway, the Azure OpenAI gateway, which is maintained by Information Systems Security and is the bank's sanctioned path for foundation-model access. The application authenticates to the gateway using an OAuth2 client-credentials flow and reaches it through the enterprise proxy. The gateway applies platform-level controls to all traffic: Personally Identifiable Information (PII) filtering on both inputs and outputs, content filtering using neural multi-class classification that screens harmful content across four categories (hate, sexual, violence, and self-harm) at four severity levels with content at medium or high severity filtered by default, and comprehensive logging of all interactions that provides an audit trail. Contractual and technical controls provide that U.S. Bank data sent through the gateway is not used by the provider to train its foundation models.
+
+[INSERT IMAGE HERE: Foundation-model access through the enterprise generative AI gateway]
+
+**Figure 7.5 - Foundation-model access and gateway controls.** [Request flow from the application, through the enterprise proxy and OAuth2 authentication, to the Information Systems Security-maintained generative AI gateway that applies Personally Identifiable Information (PII) filtering, content filtering, and logging, and on to Azure OpenAI for GPT-4o generation and text-embedding-ada-002 embedding. To be provided by the MO.] [TBD - insert diagram]
+
+**Validation Comments:**
+
+**Framework and theory.** The hybrid framework, a deterministic recommender for product selection combined with retrieval-augmented generation for content and a production cache for stability, is consistent with the intended use of producing grounded, consistent product messaging for internal banker review. Restricting generation to retrieved product content and fixing product selection through deterministic logic are appropriate choices for limiting hallucination and output variability in this use case. Validation has no concerns with the overall framework and theory for this internal-facing, low risk use.
+
+**Vendor foundation model.** Because GPT-4o is closed-source and externally hosted, Validation assesses it as a vendor foundation model, relying on the provider's published documentation and on U.S. Bank's contractual and gateway controls. The model internals are not available for direct inspection. This is acceptable for a low risk, internal-facing application whose outputs are grounded in a controlled knowledge base and reviewed by a banker before use. Because both models come from a single external provider and serve more than one stage, a change to either model would affect multiple pipeline stages. The change-management treatment of such a change is addressed in Section 10.1 of this validation report.
+
+**Context window and output tokens.** The input context window of 128,000 tokens is well above the token requirements of this application's knowledge base and prompts, and reliance on retrieval grounding mitigates the knowledge-cutoff limitation for product-specific content. The two documented maximum-output-token values, 25,000 and 2,000, are inconsistent with each other, and neither aligns with GPT-4o's published maximum output, so a 25,000-token output is not achievable; this inconsistency is raised in the Documentation Transparency and Robustness Finding (Section 5.4). The exact GPT-4o snapshot and the production output-token value are not yet verified against the production deployment and are deferred to the Part 2 implementation verification (Section 11.3).
+
+**Benchmark standing.** The MMLU standing in Table 7.6 characterizes general capability and does not substitute for the use-case-specific outcome evaluation in Section 8. Benchmarking is limited to MMLU, which is sufficient to establish general capability for a low risk, internal-facing application, and additional benchmarks such as IFEval and MT-Bench are not assessed. This published standing, together with the use-case fit, supports the appropriateness of the selection; it is distinct from the outcome benchmarking addressed in Section 8.2, which is not applicable for this model.
+
+**Embedding model and gateway.** text-embedding-ada-002 is a prior-generation embedding model and newer embedding models are available. Whether to adopt a newer model is for the MO to consider and does not raise a concern for the current use. The gateway controls are enterprise-standard and apply to all gateway traffic; their construction is described in Section 7.3 and their adequacy as a guardrail is assessed in Section 8.1. Validation has no concerns with the foundation-model selection and access for this internal-facing, low risk use.
+
+## 7.3 Model Construction and Selection
+
+The model is constructed as a six-step pipeline from document ingestion to cached serving:
+
+1. **Chunking and canonicalization.** Documents are chunked using a two-tier approach, page-level segmentation followed by recursive character splitting, at 4,000 characters with 200-character overlap. Chunks are canonicalized to normalize brand and product terminology, which includes a search-and-replace that rebrands the generic Talech source content to Elavon.
+2. **Query assembly.** The retrieval query is assembled by a fixed query template from the customer profile attributes and general product information. The recommended plan and feature details are excluded from this initial query and enter at re-ranking.
+3. **Hybrid retrieval.** A primary dense vector search with L2 (Euclidean) distance over an Inverted File with Flat compression (IVFFlat) index of 100 partitions returns the top 20 chunks, supplemented by a secondary entity-link retrieval based on stored product-to-chunk links. The links are created at document ingestion: GPT-4o scores each chunk's relevance to each product on a 1-to-10 scale, links scoring 6 or higher are stored, and the stored confidence is the relevance score divided by 10.
+4. **Multi-factor re-ranking.** The combined set is scored by a multi-factor relevance score with documented boosts (curated selling-point documents, product-type match, business-size match, content-category match, and recency), penalties (product-type mismatch and near-duplicate content), a minimum relevance threshold of 0.2, and per-document and total chunk limits for diversity. Chunks mentioning the selected product features or plan names receive a relevance boost at this step.
+5. **Generation.** GPT-4o generates the selling point at a low temperature (0.2 in the documented configuration; the documented setting for the extraction prompts is 0.1), with a structured JavaScript Object Notation (JSON) response format and a custom, dynamically assembled generation prompt that places retrieved chunks behind a clear boundary to limit prompt injection and includes explicit negative constraints, for example not fabricating features and avoiding specific revenue figures. The generation prompt also includes the product name and description from the product database, in addition to the retrieved chunks.
+6. **Cache serving.** In production the selling point is served from the cache, with no retrieval or generation at serve time.
+
+The pipeline assembles several distinct texts, and this report names them consistently to avoid confusion. In processing order:
+1. Pre-processing: the extraction prompts belong to document ingestion; the product-to-chunk link extraction prompt is in use and creates the links (the Entity-link creation comment below), while the chunk-metadata extraction prompt is coded but not used in production.
+2. Retrieval: the retrieval query (step 2 above) is produced by a fixed query template and is used only for embedding and retrieval.
+3. Generation: the generation prompt (step 5 above) is assembled separately from the retrieval query; it carries the retrieved chunks, the injected product name and description, the recommended plan and features, and the output instructions, and it is the text submitted to GPT-4o for generation.
+4. Evaluation: the judge prompt belongs to the evaluation pipeline (Section 8.1) and plays no role in serving.
+
+The retrieval query and the generation prompt are assembled independently from shared inputs; the query text is embedded for retrieval, and the generation prompt is submitted for generation.
+
+The production code path is rag_feature_generator.py; the rag_plus_generator.py path is legacy and not in production.
+
+The input and output guardrails are constructed around the gateway through which GPT-4o is accessed. The gateway applies authentication and authorization, comprehensive logging of interactions, Personally Identifiable Information (PII) detection and filtering, and content filtering, and contractual and technical controls provide that U.S. Bank data is not used by the provider to train its foundation models. The model also applies its own input handling, including PII handling, and output post-processing.
+
+**Validation Comments:**
+
+**Construction and guardrails.** Validation's assessment addresses the production code path (rag_feature_generator.py). Validation has no concerns with the construction approach itself, and has no concerns with the construction of the input and output guardrails as documented; the content and PII filtering are detailed and assessed as guardrails in Section 8.1.
+
+**Injected product descriptions.** The product-attribute language in the outputs traces to the product name and description injected into the generation prompt at step 5, in addition to the retrieved chunks. This grounding pathway is not described in the documentation and is raised in the Documentation Transparency and Robustness Finding (Section 5.4).
+
+**Production configuration.** The configuration block in the documentation shows a development environment setting (ENV_CAT=dev) and a default temperature of 0.2, while the narrative refers to a low temperature for consistency. The configuration values that apply in production, including the temperature, the token limits noted in Section 7.2, and the environment, are not yet verified against the production deployment; that verification is deferred to the Part 2 implementation verification (Section 11.3), which is out of scope for this validation. The absence of documented production configuration values is raised in the Documentation Transparency and Robustness Finding.
+
+**Entity-link creation.** The documentation characterizes the product-to-chunk links behind the entity-link retrieval as pre-computed, verified links. Per Validation's review of the ingestion code, the links are created by GPT-4o, which scores each chunk against the product list per the pipeline description at step 3. The MO and MD state that the mapping comprises approximately 450 links and that the extractor produces the mapping only, with no product metadata; they describe the mapping as a minor boosting supplement to the primary dense search. The extraction prompt reads, in relevant part:
+
+> Prioritize products that are known to be gold standard for the chunk, when they align with the context and features described. [...] Assign relevance scores using these criteria: 8-10: Product aligns strongly with the core features, audience, and plan described in the document chunk. 6-7: Product aligns moderately with the document chunk but lacks some key features or context. Below 6: Product is not relevant to the document chunk. [...] If the document chunk directly mentions or references a product's name (exact or close match), increase that product's relevance score by 0.5 to 1 point.
+
+Validation notes four observations:
+1. No verification process for the links is described or evidenced, and the MO and MD confirmed that the subject matter expert does not review the assigned mapping, so the "verified" characterization is not supported.
+2. The prompt instructs the model to prioritize products "known to be gold standard for the chunk" without defining a gold standard.
+3. The prompt requests an integer 1-to-10 score but instructs a fractional bonus of 0.5 to 1 point for name matches.
+4. The documentation's data inventory separately describes a human-curated dataset of document chunks with expected product mappings, as ground truth for retrieval and mapping evaluation. No dataset evidenced as human-curated was provided to Validation, and the production links are generated by the large language model without reference to a curated mapping.
+
+For the current corpus the effect is contained: the links feed retrieval, production serves cache-only, and every served output was independently reviewed (Section 8.1). The documentation characterizations are raised in the Moderate Priority Finding on Documentation Transparency and Robustness.
+
+**Retrieval index.** The IVFFlat approximate nearest neighbor index is configured with 100 partitions over the 32-chunk corpus, which the documentation describes as a pragmatic balance between speed and recall. The partition count exceeds the number of chunks, so most partitions are empty and the populated ones hold at most one chunk. The standard guidance for this index type is on the order of one partition per thousand vectors, which for a 32-chunk corpus is a single partition. As configured, the index provides no speed benefit, and depending on how many partitions the search examines at query time, it can return an incomplete set of chunks relative to an exact search. Two considerations contain the effect on the current outputs:
+1. The entity-link retrieval supplements the dense search so that relevant chunks are not missed, and the generation model makes the final chunk selection, so the hybrid retrieval does not depend on the dense index alone (the links themselves are created by the large language model at ingestion, per the Entity-link creation comment above).
+2. Every output produced through this retrieval was independently reviewed by Validation, and production serves cache-only with no retrieval at serve time (Sections 8.1 and 11), so any retrieval effect is contained within the reviewed outputs.
+
+These considerations hold for the current cache. The configuration itself remains as built and would govern retrieval again whenever the cache is regenerated. Validation raises the index configuration as part of the Moderate Priority Finding on Coding and Calculation Errors and requests that the MD set the partition count appropriate to the corpus size, or use an exact search, before any future regeneration of the cache.
+
+**Re-ranking boosts.** Two of the re-ranking boosts documented at step 4 do not operate as documented. The business-size boost depends on a company_size value and an annual_revenue field that the documentation states are extracted from the documents by GPT-4o. This chunk metadata is not populated with usable values in production: sampled production rows carry an annual revenue of "unknown," and the MD confirmed that the metadata extractor is not used in production. The MD subsequently characterized the boost as present in the code but operationally inert for most chunks, because most document chunks carry no clear business size and are marked unknown. Under either characterization the boost does not influence ranking as the documentation describes. The product-type boost is a placeholder that cannot operate because the product data model lacks the attribute it keys on. The documentation overstates this processing, which is captured in the Documentation Transparency and Robustness Finding; the inactive code paths themselves are noted for awareness in Section 5.5.
+
+## 7.4 Development Adjustments
+
+Validation reviewed the adjustments applied to the model during development, before final performance evaluation. The development-time adjustments are the retrieval re-ranking tunings, the minimum relevance threshold, and the per-document and total chunk caps described in Section 7.3; their final configured values are disclosed. Consistent with the streamlined scope, the final configurations are disclosed even though a full tuning-justification record is not required at low risk. No score calibrations, overlays, or overrides are applied to the generated output during development. Validation has no concerns with this position. Adjustments applied after development, during or prior to use, are addressed in Section 8.5.
+
+## 7.5 Assumptions and Limitations
+
+The MD identifies four assumptions and limitations, each with a stated materiality and mitigant:
+- Dependence on knowledge base quality (high materiality; mitigated by subject matter expert validation and version-controlled updates).
+- Generative output variability (medium; mitigated by low temperature and caching).
+- Limited domain coverage (low; mitigated by retrieval filtering and fallback responses).
+- Token or context limits (low; mitigated by prompt standardization and grounding).
+
+**Validation Comments:**
+
+Validation has no concerns with the MD's characterization for the documented products. Validation additionally noted the following limitations not fully developed in the documentation:
+- Provenance is not exposed in the user interface and is available only in backend logs, which constrains a banker's ability to verify the source of a claim at the point of use (Section 8.4 of this validation report).
+- The captured feedback signal tracks the product recommendation and does not capture the quality of the generated selling point, which limits the ability to monitor generation quality after deployment (Section 12.1).
+- The large language model as-a-judge evaluation provides limited discriminating signal (Section 8.1).
+- Output accuracy depends on the accuracy of the recommender input data. Validation's independent faithfulness review identified three selling points, all for Elavon Terminal, in which a plan labeled as free for a product that carries hardware cost produced unqualified cost phrasing, overstating the absence of cost when the accurate description is a low upfront cost; this is raised in the High Priority Finding on Performance of Estimation Method, and the correction is tracked (Section 8.1).
 
 ---
-Sources: MDD Sections 3.1-3.2, 4.1, 5, 6.1-6.2; sample outputs (products and output structure); IV readiness assessment.
-Gaps: knowledge base chunk count 32 confirmed (documentation states 28, Documentation Transparency Finding). Scope and data counts, including customers and segments, are in Section 7.1.
-Figures: Figure 4.1 is the model architecture diagram, one figure covering both development and production per the template. The diagram is to be corrected to add the production cache and inserted at the placeholder [TBD]; the documentation-side correction and the feedback-loop completion are tracked in the Findings (Section 5.4), not as report gaps.
+Sources: MDD Sections 5, 6.1-6.2 (chunking, embeddings, retrieval, prompt, vector database, cache), 6.3, 3.3; sample outputs; 06/02 output assessment (judge reliability); IV readiness assessment. Model specifications (context window, dimensions, token limits, knowledge cutoff) to be confirmed against current vendor documentation.
+Gaps: figure image placeholders only (Figures 7.1 through 7.5; to be inserted by the MO) [TBD]. Internal note (drafting record): the revised MDD received 07/14 renames the chunk-metadata description to "entity document mapping" but retains the per-chunk metadata fields, so the correction is incomplete; per the evidence-base decision the report assesses the kickoff snapshot, and the metadata and entity-link items stand. The approximately 450-link mapping count and the SME-does-not-review-the-mapping confirmation are from the MO/MD at the 07/07 weekly meeting (attributed to role in the report body, no meeting reference). Closed: chunk count 32 confirmed; 172/14 split derived by Validation from the mapping files; customer scope bound stated (under 100,000, per the MO); representativeness resolved (full generated population reviewed, not a sample); GPT-4o snapshot and production configuration parity rehomed to Part 2 (Section 11.3); model specifications populated from published sources; benchmark table populated (MMLU); current-cache data statistics confirmed.
