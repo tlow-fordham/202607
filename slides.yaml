@@ -1,95 +1,257 @@
-Internal working draft. Component of the Model-7468 GenAI Selling Points Initial Validation report. Part II.
+Internal working draft. Component of the Model-7468 GenAI Selling Points Initial Validation report. Part I.
 
-# 10 Model Governance
+# 5 Validation Summary
 
-## 10.1 Development Document Review and Model Change Management
+## 5.1 Prior Validation Outcomes
 
-**Overall documentation quality and completeness**
+This is the initial validation of a new model; there are no prior full-validation outcomes. The model has operated in a limited pilot under a Provisional Approval, granted an Approved with Restriction outcome on 12/11/2025 for pilot use from 12/15/2025 through 04/15/2026, and a subsequent Special Purpose Validation that extended the pilot to 08/14/2026 (signed off 04/13/2026). Both were time-bound provisional outcomes restricting the pilot to a subset of Small Business Specialist bankers: the Provisional Approval covered the three Talech (now Elavon) products, and the Special Purpose Validation extension additionally covered the money-movement products served as static entries. Neither raised any actionable or non-actionable observations or Findings. This Initial Validation is the full validation following the pilot period.
 
-The Model Development Document follows the appropriate MRG template version, the Model Development Document Template v3.0 (October 2023), and is signed by the appropriate parties. The documentation describes the model's architecture, data, construction, and guardrails.
+## 5.2 Summary of Recent Changes to Model
 
-**Validation Comments:**
+Measured against the last validation activity, the Provisional Approval and its Special Purpose Validation extension, three changes are relevant:
+1. The serving design changed during the pilot from generation at request time to pre-generated cached content, a change the Model Owner (MO) attributes to performance considerations. The cached design is the framework assessed throughout this report. The change was made without a new submission to Model Risk Management and is addressed in the High Priority Finding on Performance of Estimation Method (Section 5.4 of this validation report).
+2. The product branding changed from Talech to Elavon, implemented as a code-level search-and-replace during document processing, with the source documents unchanged and the production cache regenerated against the Elavon-branded content. This is assessed in Sections 7.1 and 8.1.
+3. The banker feedback committed at the Provisional Approval, a 1-to-5 selling-point rating with free text, was not implemented. The 1-to-5 rating is not collected, addressed under the Moderate Priority Finding on Documentation Transparency and Robustness. The committed free-text feedback was not enabled in production, addressed under the Moderate Priority Finding on Coding and Calculation Errors; the MO states the collection has since been enabled, which Validation has not verified.
 
-The documentation is adequate to support the review, but does not fully reflect the deployed system. The gaps span:
-- The data counts and configuration values (the knowledge base chunk count, the maximum output-token value, and the production configuration).
-- The architecture diagram's omission of the production cache.
-- The chunk-metadata, entity-link, and retrieval-boost descriptions and the data inventory's curated mapping dataset description.
-- The injected product-description pathway and the recommender mapping data.
-- The feedback streams collected and the per-environment generation and cache-change governance.
-- The effectiveness score and the evaluation descriptions, the Estimation Method Assessment identifier, and residual drafting artifacts.
+The structured feedback currently collected is oriented to the product recommendation (thumbs up or down, with preset reject reasons), while the free-text feedback field can address either the recommendation or the generated selling point but is sparse in practice (Sections 5.4, 10.1, and 12). The model framework is otherwise unchanged from the provisionally approved version.
 
-These are enumerated with the corresponding corrections in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4 of this validation report). Individually correctable, collectively they indicate that the documentation does not fully reflect the model as built. Because the documentation alone was not sufficient for the assessment, Validation collected significant additional development information, including the production and ingestion code, the prompt configurations, the evaluation artifacts, and the row-level production outputs; these are identified among the documents reviewed in Section 2, and the assessment is grounded on those artifacts, with the corresponding documentation corrections requested in the Finding.
+## 5.3 Current Validation Conclusions
 
-**Model change management**
+Validation completed the Initial Validation of Model-7468 GenAI Selling Points, covering the model's generation of selling points for the three Elavon products within the scope defined in Section 2 of this validation report. The assessment drew on the Model Development Document, the production code and configuration, the reported subject matter expert review results, sample outputs, Validation's independent faithfulness review of the full cached population, and discussions with the MO and Model Developer (MD).
 
-The documentation defines the material-versus-minor model change categories. Under those definitions, the material changes are a change in the foundation LLM, significant modifications to prompt structure, logic, or constraints, changes to retrieval methodology (including the embedding model, chunking strategy, and ranking logic), changes to guardrails, compliance logic, or output controls, and the addition of new product domains or large-scale updates to knowledge base content; material changes require prior Model Risk Governance (MRG) review, updated documentation, and additional testing before production deployment. Incremental knowledge base updates within existing domains, minor prompt wording adjustments, small configuration changes, and routine data or document refreshes are classified as minor, tracked through internal change logs without prior MRG approval.
+The outcome is Approved with Restrictions. Validation performed an independent faithfulness review of all 172 cached selling points against the source documents, the curated selling-points source, and the product database descriptions used in generation. The review identified three selling points, all for Elavon Terminal, with unqualified cost phrasing traced to the recommender input data; the business line acknowledged the limitation and the correction is tracked to closure under the High Priority Finding on Performance of Estimation Method. Bankers review each selling point before use and cannot alter it, and the model is internally facing, does not interact with customers, and does not make decisions without manual intervention. The recommendation step is deterministic and the risk rating recorded in the inventory is Low.
 
-**Validation Comments:**
+The evidence and control gaps identified during the validation are recorded in five Findings, detailed in Section 5.4 of this validation report: the High Priority Finding on Performance of Estimation Method, and the Moderate Priority Findings on Coding and Calculation Errors, Documentation Transparency and Robustness, Monitoring, and Implementation Process. The principal gaps are:
+- The published automated performance results could not be replicated from the underlying output and were withdrawn by the MD after Validation challenged the reported values.
+- The effectiveness score attached to each output provides no demonstrated signal, and its production values cannot be reconciled to the code and prompt artifacts provided.
+- The subject matter expert review presented as the primary performance evidence is a single blanket attestation with no reviewer-created row-level record, and has no mechanism to alter, curate, or withhold content from serving.
+- Content is regenerated by the model within each environment without a review gate before serving.
+- Coding errors disable a committed feedback control and introduce evaluation-code defects.
+- The ongoing monitoring plan does not yet establish a reliable quality signal or valid baselines.
+- The documentation does not fully reflect the model as built, and the implementation document does not fully describe the implementation framework and controls.
+- Changes were made to the model and its production content during the pilot, including the serving-design change and the rebrand cache regeneration, which were served without review and without notification to Model Risk Management (raised within the High Priority Finding on Performance of Estimation Method).
 
-Validation has no concerns with the material-change definitions. Their coverage is appropriate, including the explicit treatment of the embedding model within retrieval-methodology changes and the treatment of the addition of new product domains as material. That materiality line is sound: adding product domains adds chunks, product-to-chunk links, and recommender mapping rows, which changes retrieval behavior across existing outputs, while content edits within the existing products, for example updating a product description, leave the framework and the retrieval population unchanged and are appropriately minor. The governance of regeneration, through which any content change reaches serving, is addressed separately: the documented review of regenerated content before serving and the notification to Model Risk Management are requested under the High Priority Finding on Performance of Estimation Method, which also addresses the changes made to production content during the pilot without a new submission, and the documentation of the cache-change governance is requested in the Documentation Transparency and Robustness Finding (Section 5.4).
+Validation's independent review is the primary performance evidence for this validation, and the restriction contains the regeneration and review-control risk while the Findings are remediated.
 
-Validation also noted changes the Model Owner (MO) should expect to manage under these definitions going forward. The production deployment uses a preview version of the provider's interface (Azure OpenAI API version 2025-04-01-preview); preview versions can change in behavior or be deprecated, so the management of the interface version should be addressed. A change of the foundation model serving any of the model's functions, whether generation, product-to-chunk link extraction, or the automated evaluation, is material under these definitions and requires a separate validation activity before changed content is served; a notification and validation path for such a change should be documented. A change of the embedding model is likewise material under these definitions, which name the embedding model within retrieval-methodology changes; it changes every stored document vector and the retrieval behavior. The MO should confirm whether any changes are expected before the next validation activity.
+On this basis the outcome is Approved with Restrictions: production use of the current cached selling points for the three Elavon products is approved for six months from the sign-off date ([TBD - sign-off date] through [TBD - sign-off date plus six months]). During the restriction period, no cached selling point may be regenerated and no new selling point may be added to production without documented subject matter expert review before serving and prior notification to Model Risk Management. Lifting the restriction requires closure of the High Priority Finding on Performance of Estimation Method; absent closure within the restriction period, production use is to cease pending remediation. The four Moderate Priority Findings are tracked to closure through the standard issue-management process. The next validation activities are stated in Section 3 of this validation report.
 
-**Ongoing recalibration and refitting schedule**
+## 5.4 Validation Issues and Findings
 
-The model is static, with no automatic recalibration or retraining. The EMA maintenance section records the model as subject to annual updates, and the knowledge base is refreshed on demand in an event-driven manner when documents are uploaded or removed, with no scheduled batch re-indexing; the production cache is regenerated accordingly (Section 4). Validation has no concerns with the stated schedule. The governance of regeneration events is addressed under Model change management above.
+**Table 4 - Summary of Issues and Findings**
 
-## 10.2 Model Change Review
+| | High | Moderate | Low |
+|---|---|---|---|
+| Number of Actionable Issues | 0 | 0 | 0 |
+| Number of Actionable Findings | 1 | 4 | 0 |
+| Number of Non-Actionable Findings | 0 | 0 | 0 |
 
-This section is not applicable to initial validations under the governing template, as there is no prior validation activity against which to assess post-implementation changes. The changes made during the pilot period, including the serving-design change to pre-generated cached content, the Talech-to-Elavon rebranding, and the cache regeneration, are assessed within this validation (Sections 5.2 and 5.4).
+There are no non-actionable Findings in this report.
 
-## 10.3 Model Inventory and EMA Review
+#### 5.4.1 Actionable Issues
 
-The most recent Model Inventory Record and Estimation Method Assessment (EMA) were compared against the development documentation and other information obtained during the validation activity to ensure model information is accurately reflected. The table below summarizes the outcomes from this review.
+There are no actionable issues in this report.
 
-The MO submitted the EMA covering full production use on 07/06/2026 (submission reason Initial, pilot flag No). The MRG risk rating field on the submitted record is not yet populated, the MO's perceived risk rating is recorded as Low, and the pilot-era EMA remains the risk rating of record pending the MRG review.
+#### 5.4.2 Actionable Findings
 
-**Table 6 - Archer Inventory Review Outcomes**
+**Finding Table 1**
+- Finding Count: 1
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Performance of Estimation Method
+- Finding Priority: High
+- MRM Category: Performance of Estimation Method
+- Finding Description: The performance evidence provided for the model did not withstand review, and the serving pathway lacks a review gate:
+  - The published aggregated retrieval results include values outside the feasible range of the stated metrics and could not be reconciled to the underlying row-level output. Following Validation's challenge of the reported values, the MD stated that the published production results were erroneous and that the row-level retrieval evaluation should be disregarded in its entirety. No retrieval performance evidence exists for the production environment, and the development-environment results cannot be reproduced because the underlying data is no longer available.
+  - The effectiveness score attached to each selling point provides no demonstrated signal. The score is a self-assessment: it is requested from the same large language model call that generates the selling point, so no evaluation independent of the generation underlies it. In the production output, 169 of the 172 generated selling points (98.3 percent) carry a score of exactly 0.92 and the remaining three (1.7 percent) carry 0.95, and the code and prompt artifacts provided to Validation cannot be reconciled with these values; the generation code provided (rag_feature_generator.py) takes the score from the model response with a default of 0.0 when the model omits it, and the generation prompt requests a value between 0 and 1 without a reference value. The model documentation does not define the metric.
+  - The llm_critique score attached to each selling point, the only other automated quality measure recorded, does not support a performance conclusion. Accuracy, the only criterion bearing on factual grounding, carries the lowest weight in the implemented rubric (15 percent), so the composite primarily reflects marketing quality, and an output scoring zero on factual grounding can exceed both acceptance thresholds stated in the monitoring plan. The recorded critique text is materially identical across the recorded score bands and identifies no factual-grounding or compliance concern, so the numeric differences between bands carry no discernible risk meaning, and the recorded composites cannot be decomposed because the sub-scores are not retained.
+  - The subject matter expert review relied upon as the primary performance evidence under the streamlined scope is not evidenced: the review consists of a single blanket attestation that the entire set passes, and no row-level review is evidenced, so no per-row pass outcome, reviewer rationale, or comment was received or formally captured; the results file provided has no reviewer-comment field, the stored approval flag remains not-approved on every row, and the MO populated the per-row pass entries after the review. The file records none of the segment information the documentation states is reviewed with each output and displayed the system's automated scores alongside each row, which the MO acknowledged as a process gap. A pass is recorded for every row at every automated score value, including the two rows the system scored 0.00, below the monitoring plan's breach threshold. The review also lacks a documented standard for what constitutes a pass, including gradations, reviewer edits or enhancements, and an assessment of answer completeness against the available source content.
+  - The review has no mechanism to modify, curate, or withhold the served content: reviewer edits do not update the production content, so the review does not amount to a curation of the selling points after a first draft. Selling points are generated by the model within each environment, including production, at startup and on regeneration events, and no technical control prevents unreviewed content from being served; the production cache was fully regenerated when the source documents were rebranded and was served before any review took place and without notification to Model Risk Management. The serving design also changed during the pilot, from generation at request time to pre-generated cached content, and these production changes were made without a new submission to Model Risk Management.
+  - Validation performed an independent faithfulness review of all 172 cached selling points as substitute evidence (Section 8.1 of this validation report), which identified three selling points with unqualified cost phrasing traced to the recommender input data; the business line acknowledged that limitation and the correction is tracked to closure under this Finding.
 
-General EMA Information:
+  As a result, Validation requests the MO and MD to:
+  - Provide the subject matter expert's original review record or a written attestation of the reviewer, dates, and method for the current cache.
+  - Implement a documented row-level review for all future or regenerated content that captures the per-row outcome, the reviewer, the date, and the reviewer's rationale and comments, under a documented review standard covering the pass criteria, completeness against the available source content, and reviewer edits or enhancements, and provide a mechanism for reviewer edits to update the served content, with notification to Model Risk Management before production content is regenerated.
+  - Correct the recommender input data underlying the flagged cost phrasing and the affected selling points under that documented review.
+  - Re-establish a valid evaluation methodology against the current corpus before any future regeneration.
+  - Define the effectiveness score and its intended use in the model documentation and demonstrate with positive and negative cases that the score discriminates between effective and ineffective selling points, including the reasoning behind the assigned values, or remove the score from the model output and from any monitoring reliance.
+  - If the large language model as-a-judge evaluation is retained for performance evidence or monitoring, report all sub-scores with each recorded composite so the composite can be decomposed, and revise the evaluation dimensions to measure factual grounding directly, for example faithfulness, context relevance, and answer relevance, consistent with standard retrieval-augmented generation evaluation practice and with the evaluation the model documentation describes.
+  - Retain generation-time artifacts (inputs, retrieved content, outputs, and configuration) for each production generation event, and identify and record the deployed code version for each generation event, so that future verification is possible.
+  - Identify and attest to the changes made to the model, its code, its content, and its inputs during the pilot period, so that what is in production can be verified against an approved baseline, and submit any change to the model during an approved-use period to Model Risk Management before the changed content is served.
+  - Ensure all future performance evidence states its environment and run date and is reproducible from retained artifacts.
 
-| Item | Value |
-|---|---|
-| EMA ID(s) reviewed | 68224437 |
-| Date EMA last submitted by Model Owner | 07/06/2026 |
-| MRG Review Status | Pending review (target review date 08/05/2026) |
-| MRG Acceptance Date | Not available (pending review) |
+  See Sections 4, 5.2, 7.3, 7.5, 8.1, 10.1, 11, and 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The testing evidence provided is insufficient to support the model's performance, and process verification of the reported results could not be completed: the underlying data is no longer available, the results were withdrawn by the MD during the validation, and the review control has no mechanism to gate what is served. A Moderate Priority Finding is not warranted because no reliable performance evidence produced by the MO exists for the production environment; the near-term risk in use is contained by Validation's independent review of all served content and banker review before use, and that containment is reflected in the restriction. Therefore, a High Priority Finding is justified.
 
-| Archer Application/Section | Outcome of Review | Updates required, if applicable |
-|---|---|---|
-| **Inventory Record - General Information** | | |
-| System or Umbrella Association | Accurate | None; no estimation method system, consistent with Section 9. |
-| Currently in Production Use | Accurate | "Yes" reflects the current pilot use in the production environment. |
-| Actual Date of Production First Use | Accurate | 04/15/2026 is the pilot period start date. |
-| Estimation Method Assessment: Internal or External | Accurate | Internal; the framework was built internally and calls the externally developed foundation models through the enterprise gateway (Section 7.2). |
-| **Method Assessment Tab** | | |
-| Estimation Method Version | Accurate | None. |
-| Estimation Method Change Description (for Change EMAs) | Not applicable | This is not a change EMA. |
-| Downstream Estimation Method Dependency | Accurate | None recorded, consistent with Sections 4 and 9. |
-| Internal or External | Accurate | None. |
-| Expected Date of First Use | Accurate | 08/17/2026, following the pilot period ending 08/14/2026. |
-| Third Party Risk Profile ID | Not applicable | The model is not built by a third party. |
-| Estimation Method Developer(s) | Updates required | The field is blank; the Model Developer is to be recorded. Raised in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4). |
-| Estimation Method Production Platform | Accurate | The recorded production data sources are the Business Banking AI Platform and the enterprise gateway, and the recorded input data source is the Business Banking Salesforce application. |
-| Primary Estimation Method Category | Accurate | None. |
-| Estimation Method Methodology General | Accurate | None. |
-| Estimation Method Methodology Detailed | Accurate | The legacy Feature-Benefit-Need (FBN) mapping reference is replaced with feature-plan mapping, and inputs are recorded as customer attributes (industry, sub-industry, product, and revenue). |
-| AI/ML | Accurate | The artificial intelligence and machine learning and generative artificial intelligence designations are recorded, the methodology is recorded as a large language model, and the foundation models are identified as GPT-4o and text-embedding-ada-002, accessed through the enterprise generative AI gateway. |
-| Static or Dynamic | Accurate | Static, consistent with the static and cached production pathway (Sections 4 and 10.1). |
-| Estimation Method Business Purpose and Usage | Accurate | None. |
-| Automatic Decisioning Without Manual Intervention | Accurate | No automatic decisioning without manual intervention; bankers review each output before use. |
-| Degree of Manual Review of Estimation Method Output | Accurate | None. |
-| Customer Impact Section | Accurate | The record states that no personally identifiable information is used and that the method is internal. |
-| Financial Impact Section | Accurate | None. |
-| Estimation Method Maintenance Section | Updates required | The section records the model as static and subject to annual updates. The change definition recorded in the EMA ("For the Gen AI Selling Points model, only if new data sources are added which dynamically triggers the selling points generation will be considered as material model change. Everything else will be BAU.") does not align with the model documentation's change-management definitions. Raised in the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4). |
-| **Inventory** | | |
-| Downstream Estimation Methods | Accurate | None recorded, consistent with Sections 4 and 9. |
-| Upstream Estimation Methods | Accurate | None recorded; the model's inputs are data (Section 4). |
+**Finding Table 2**
+- Finding Count: 2
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Coding and Calculation Errors
+- Finding Priority: Moderate
+- MRM Category: Coding and Calculation Errors
+- Finding Description: Validation reviewed the model code and identified coding and configuration defects in the feedback, evaluation, and retrieval components:
+  - The banker feedback collection on generated selling points committed at the Provisional Approval was not enabled in production. The condition was identified during this validation, and the MO states the collection has since been enabled; Validation has not independently verified the enablement or observed accumulated selling-point feedback.
+  - The evaluation code contains defects that will carry into ongoing monitoring if its computations are reused:
+    - The context-similarity computation silently substitutes the first product document when the product-title match fails, so scores can be computed against the wrong product's context, and the computation is not performed against the retrieved chunks supplied to generation, so the score does not measure grounding in the generation context.
+    - The sensitivity computation returns a default of 1.0 when a comparison set is empty, making the industry sensitivity structurally 100 percent.
+    - Retrieved document names are not deduplicated before scoring.
+    - The judge evaluation records a fixed mid-range score when the model response cannot be parsed, so a recorded score is not always a judgment.
+    - The judge evaluation constructs a recommended-features instruction intended to prevent recommended features from being flagged as unsupported, but the judge prompt template contains no placeholder for it, so the section is silently dropped and never reaches the judge.
+  - The production retrieval index is misconfigured for the corpus size: the approximate nearest neighbor index is set to 100 partitions over a 32-chunk corpus, where the standard guidance for this index type places the partition count on the order of one for a corpus this small. Most partitions are empty, the index provides no speed benefit, and depending on the number of partitions examined at query time it can return an incomplete set of chunks. The effect on the current cached outputs is contained because production serves cache-only and Validation independently reviewed every generated output; the configuration governs retrieval again on any regeneration of the cache.
 
-**Additional Validation Commentary:**
+  As a result, Validation requests the MO and MD to:
+  - Provide evidence that the selling-point feedback collection is enabled and operating in production; if the enablement is complete, no further action is required beyond the evidence.
+  - Correct the evaluation code defects before any of these computations are used for ongoing monitoring, or confirm in the revised monitoring plan that the affected metrics will not be used for this model.
+  - Set the retrieval index partition count appropriate to the corpus size, or use an exact search, before any regeneration of the cache.
+  - Confirm through ongoing monitoring that a usable selling-point feedback signal accumulates from the collection.
 
-Validation noted that the change definition recorded in the submitted EMA treats only the addition of new data sources that dynamically trigger selling-point generation as a material change, with all other changes classified as business as usual, while the model documentation defines a broader set of material changes (Section 10.1). Validation accepts the documentation's definitions as the governing change-management definitions for this validation. Three EMA corrections are requested under the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4): populate the Estimation Method Developer field, align the EMA change definition with the model documentation, and correct the description of the effectiveness score as an input to prompt refinement, a use that is not evidenced.
+  See Sections 7 and 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The coding errors disable a committed feedback control, introduce evaluation defects that would carry into ongoing monitoring if the computations are reused, and leave the production retrieval index misconfigured for the corpus size; the errors do not affect the generated selling points themselves and there is no evidence of incorrect generation. A High Priority Finding is not warranted because the generated outputs are unaffected; a Low Priority Finding is not warranted because the defects bear directly on the monitoring backstop the streamlined scope relies on. Therefore, a Moderate Priority Finding is justified.
+
+**Finding Table 3**
+- Finding Count: 3
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Documentation Transparency and Robustness
+- Finding Priority: Moderate
+- MRM Category: Documentation Transparency and Robustness
+- Finding Description: The model documentation contains inaccurate or incomplete information and does not fully reflect the model as built. Documentation deficiencies in the Monitoring Plan are addressed in the Moderate Priority Finding on Monitoring.
+
+  Model Development Document:
+  - The stated knowledge base chunk count of 28 does not match the current count of 32.
+  - The maximum output tokens is stated inconsistently within the Model Development Document, 25,000 in the narrative and 2,000 in the configuration block, and 25,000 exceeds GPT-4o's published output limit.
+  - The configuration presented in the documentation is the development environment's (ENV_CAT=dev); the production configuration values, including the environment, temperature, and token limits, are not documented.
+  - The architecture diagram does not depict the production cache.
+  - The documentation states that per-chunk metadata (including company size and annual revenue) is extracted, maintained, and used in ranking, whereas this metadata is not populated with usable values, so the described business-size boost does not influence ranking in practice; the documentation also lists a product-type match boost among the ranking factors, which cannot operate because the product data model lacks the attribute it keys on.
+  - The documentation does not describe that the generation prompt injects the product name and description from the product database, which is the source of the product-attribute language in the outputs, nor any review governance for those descriptions.
+  - The documentation characterizes the product-to-chunk links used by the entity-link retrieval as pre-computed, verified links; the links are generated by the large language model at document ingestion, which scores each chunk against the product list, no verification process is described or evidenced, and the MO and MD confirmed the subject matter expert does not review the assigned mapping (Section 7.3 of this validation report).
+  - The data inventory describes a human-curated dataset of document chunks with expected product mappings, as ground truth for retrieval and mapping evaluation; no dataset evidenced as human-curated was provided to Validation, and the production product-to-chunk links are generated by the large language model without reference to a curated mapping.
+  - The sample selling points in the documentation present per-output citation lists without explaining that the citations record the documents supplied to the generation call and do not identify the sources actually used; the near-identical citation lists across the samples reflect this behavior.
+  - The documentation does not describe the recommender mapping data, including the segment population, the North American Industry Classification System code coverage, and the basis for the number of generating segments.
+  - The documentation does not state the environment or run date of the performance evidence presented, and the sample selling points shown carry scores that the production configuration does not produce.
+  - The documentation does not describe the feedback streams actually collected, their orientation to the product recommendation, or their status: the 1-to-5 selling-point rating described in the Provisional Approval is not collected, and free-text feedback entered under the "Other reason" rejection is not transmitted from the Salesforce interface, a limitation that bears on the feedback signal available for monitoring.
+  - The stated Estimation Method Assessment identifier (EMA - 66885813) refers to the pilot-era assessment; the current record is 68224437 per Archer.
+  - The documentation does not define the effectiveness score attached to each selling point.
+  - The documentation describes the large language model as-a-judge evaluation in three mutually inconsistent ways: the model construction narrative describes an evaluation of faithfulness, answer relevance, and context relevance that is not performed; the performance and testing narrative describes a rubric of relevance to customer segment, alignment with product features, clarity and coherence, and persuasiveness and usability, and assigns faithfulness to the subject matter expert review; and the judge prompt reproduced in the documentation's own appendix implements information utilization, clarity and structure, persuasiveness, and accuracy. The documentation does not explain the judge sub-scores, their weights, or the rationale for the weighting, and does not state which control measures faithfulness.
+  - The judge prompt reproduced in the appendix does not correspond to the recorded llm_critique scores: the MD stated during the validation that the judge prompt has been revised, the recorded score distribution is concentrated on a small set of values, which the appended prompt expressly instructs against, the recorded critiques carry a single overall score without the four sub-scores the appended prompt requires, and the prompt version that produced the recorded scores is not provided.
+  - The documentation states that embedding (cosine) similarity between the generated selling point and the source product context is computed as an additional quality signal; this computation is not part of the model's operation, and the evaluation run that produced it was withdrawn by the MD during the validation (defects in the computation itself are addressed in the Moderate Priority Finding on Coding and Calculation Errors).
+  - The documentation states that standard information-retrieval metrics (Recall@k, Precision@k, nDCG@k, and MRR) are computed when ground-truth labels are available; no ground-truth labels exist, and the one evaluation producing these metrics was withdrawn.
+  - The documentation states that metadata extraction quality is assessed indirectly through the downstream selling point evaluation pipeline; that pipeline is not in use, and the extracted metadata is not used in production.
+  - The documentation does not state that content is generated within each environment and refreshed only through regeneration events, or the governance for cache changes, namely that any knowledge base change or new or updated selling point receives subject matter expert review before it is served.
+  - The documentation retains working commentary and drafting artifacts that do not belong in the final document.
+
+  As a result, Validation requests the MO and MD to:
+  - Correct the chunk count and the output-token value.
+  - Document the production configuration values (environment, temperature, and token limits).
+  - Describe the citation mechanism, namely that citations record the documents supplied to generation.
+  - Record the feedback transmission limitation for the "Other reason" free text and its remediation status.
+  - Update the architecture diagram to show the production cache.
+  - Correct the chunk-metadata description and disclose the operational status of the business-size and product-type boosts.
+  - Document the injected product-description pathway and its review governance.
+  - Describe the entity-link creation mechanism and its parameters, and evidence the verification of the product-to-chunk links or remove the "verified" characterization.
+  - Provide the human-curated chunk-to-product mapping dataset described in the data inventory, or correct that description.
+  - Describe the recommender mapping data (segment population, code coverage, and the generating-segment basis) and include the recommender mapping and the curated selling-point examples, in their Elavon form, in the data inventory.
+  - State the environment and run date for all performance evidence.
+  - Document the feedback streams actually collected, their orientation, and their status.
+  - Document the per-environment generation design and the subject matter expert review governance for any cache or knowledge base change.
+  - Correct the stated Estimation Method Assessment identifier to the current record and define the effectiveness score and its intended use.
+  - Remove the end-to-end evaluation description or revise it to describe only the evaluation actually performed and relied upon:
+    - Align the narrative judge description with the implemented prompt reproduced in the appendix.
+    - Explain the judge sub-scores, their weights, the rationale for the weighting, and the judge's scoring scale and model configuration.
+    - Remove the information-retrieval metrics claim or state that no ground-truth labels exist to support it.
+    - Remove the embedding-similarity quality signal claim or state when it was computed and its status.
+    - Remove the indirect metadata-quality assessment claim.
+    - State the judge prompt version applicable to any recorded or reported scores.
+  - Remove the residual drafting artifacts so that the documentation reflects the model as built.
+  - Submit the corrected documentation, signed and dated, to Archer.
+
+  Estimation Method Assessment:
+  - The Estimation Method Assessment describes the effectiveness score as an input to prompt refinement, a use that is not evidenced.
+  - The Estimation Method Assessment's change definition ("For the Gen AI Selling Points model, only if new data sources are added which dynamically triggers the selling points generation will be considered as material model change. Everything else will be BAU.") treats only the addition of data sources that dynamically trigger selling-point generation as material, narrower than the documentation's change-management definitions (Section 10.3 of this validation report).
+  - The Estimation Method Developer field on the submitted record is blank.
+
+  As a result, Validation requests the MO and MD to:
+  - Correct the effectiveness-score description in the Estimation Method Assessment.
+  - Align the Estimation Method Assessment change definition with the documentation's change-management definitions.
+  - Populate the Estimation Method Developer field.
+
+  See Sections 4, 7.1, 7.2, 7.3, 10.1, 10.3, 11, and 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The gaps compromise transparency and led to the improper interpretation of results during this validation, including performance evidence whose environment and provenance were not stated. A High Priority Finding is not warranted because the model's data sources, processing, and controls were established through the validation; a Low Priority Finding is not warranted because the documentation as submitted did not reflect the model as built in respects material to the review. Therefore, a Moderate Priority Finding is justified.
+
+**Finding Table 4**
+- Finding Count: 4
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Monitoring
+- Finding Priority: Moderate
+- MRM Category: Monitoring
+- Finding Description: The ongoing monitoring plan defines performance thresholds for several metrics, but Validation identified the following concerns, detailed in Section 12 of this validation report:
+  - Signal quality: the plan's primary automated quality metric, the large language model as-a-judge evaluation, does not support a performance conclusion (raised in the High Priority Finding on Performance of Estimation Method, and assessed in Section 8.1 of this validation report); and the structured thumbs up or down feedback is oriented to the product recommendation, while the free-text feedback that could serve as a selling-point quality signal is treated as a secondary annual review with no defined threshold.
+  - Metric hygiene: the outcomes-analysis metrics are restated in the Stability Testing section as stability metrics for which they are not appropriate (the judge evaluation, subject matter expert review, document mapping quality, and retrieval precision and recall measure correctness); the plan frames the automated content-quality metrics (document mapping, context similarity, and the judge score) as annual ongoing monitoring, although the model serves a fixed cache regenerated only at cache rebuilds, so these metrics reflect cache quality at build time and yield no new signal between regenerations, and the plan does not distinguish build-time cache-acceptance checks from genuine ongoing-drift signals; and the overall conclusion does not incorporate several metrics the plan's own metrics section defines (the user comments, the application programming interface transaction metrics, the feedback data, and the Datadog log data).
+  - Conclusion methodology: the criterion for the overall performance conclusion is ambiguous, because the metric weighting is described separately from, and does not reconcile with, the criteria for assigning the green, amber, and red outcomes; and the plan states that segment-level results are diagnostic and do not independently trigger breaches unless a consistent pattern emerges, without defining when a consistent segment-level pattern escalates to an overall breach.
+  - Baselines and thresholds:
+    - Thresholds are provided for the subject matter expert evaluation, the judge score, context similarity, retrieval and document mapping, and the thumbs-down rate, but not for the user free-text comments, the application programming interface transaction metrics, the detailed feedback metrics, or the Datadog log data.
+    - The threshold definitions are inconsistent between Sections 4.2.2 and 6.3.1: the judge threshold is greater than or equal to 0.70 in Section 4.2.2 and greater than or equal to 0.60 in Section 6.3.1, so the 19 of the 171 scored production rows scoring between 0.60 and 0.70 are a warning under one section and acceptable under the other, and the thumbs-down rate carries a threshold in Section 4.2.2 but is absent from the Section 6.3.1 list.
+    - The breach definition in Section 6.3.2 refers to a "level 3 tolerance" result that does not map to the plan's metric thresholds or its green, amber, and red framework.
+    - The baseline values are not yet provided (deferred to after the first two production quarters), and the stated baseline basis includes the initial automated evaluation outputs (the 172 selling-point dataset) that the MD withdrew during the validation, so the retrieval threshold, defined as within plus or minus 10 percent of baseline, rests on a baseline that is not valid.
+  - Sensitivity: the plan's sensitivity test regenerates selling points with varied inputs and compares cosine similarity, which does not meaningfully assess sensitivity for a cache-based model whose served outputs are fixed through the cache.
+  - Plan document completeness and accuracy:
+    - The version control and sign-off are not updated to reflect the plan's revision.
+    - Table 2 does not fill the Model Risk Governance risk rating and states a Date of Production Use of December 2025 that does not match the deployment.
+    - Table 3 does not mark the Method System identifier Not Applicable and leaves the Monitoring Frequency, Monitoring Performer, Monitoring Report Approver, and Date of First Monitoring Report as TBD.
+    - Section 4.1 states pilot dates and a banker population that require updating, and the subject matter expert reviewer role is not identified in Section 3.1.
+    - The change log should be maintained separately from the monitoring report for auditor access.
+    - Section 4.2.2.1 carries residual template language inconsistent with the plan (a quarterly or semi-annual monitoring basis and Level 3 tolerance breaches, against the plan's annual frequency and its green, amber, and red framework).
+    - The plan does not state whether the Datadog log data forms part of the monitoring report or specify its retention period.
+
+  As a result, Validation requests the MO and MD to:
+  - Remove or demote the large language model as-a-judge evaluation from the monitoring plan.
+  - Elevate the banker free-text feedback field to the primary selling-point quality signal, resolving the transmission of the "Other reason" free text from the interface, updating the field's description to encourage feedback on the generated selling point, defining a monitoring cadence shorter than annual, and establishing a selling-point feedback threshold, for example a subject matter expert periodically classifying the collected free-text feedback and comparing the volume of adverse selling-point feedback to the number of leads generated.
+  - Revise the Stability Testing section so it measures stability, separate build-time cache-acceptance checks from ongoing-drift signals and align each metric's cadence with when it can change, and reconcile the overall conclusion with the metrics the plan defines.
+  - Define an unambiguous overall-conclusion criterion that reconciles the metric weighting with the green, amber, and red assignment, and define when a consistent segment-level pattern escalates to an overall breach.
+  - Reconcile the threshold definitions between Sections 4.2.2 and 6.3.1 (the judge score and the thumbs-down rate).
+  - Define an operational breach criterion in Section 6.3.2 in place of the "level 3 tolerance" reference.
+  - Define thresholds for the metrics that lack them (the user comments, the application programming interface transaction, feedback, and Datadog metrics).
+  - Provide the baseline values and re-derive them from valid production data in place of the withdrawn evaluation.
+  - Revise the sensitivity methodology in Section 6.2 to align with the model's cache-based operational design.
+  - Update the plan version control and sign-off, and complete the Table 2 and Table 3 fields.
+  - Correct the Section 4.1 pilot dates and banker population, and identify the subject matter expert reviewer role in Section 3.1.
+  - Clarify that the change log is maintained separately from the monitoring report.
+  - Confirm the monitoring frequency, conform Section 4.2.2.1 to it and to the green, amber, and red framework, and state whether the Datadog log data forms part of the monitoring report, with its retention period.
+
+  Because the streamlined testing scope relies on ongoing monitoring as a backstop for reduced independent testing, an adequate quality signal, defined baselines and thresholds, and a coherent conclusion methodology are necessary before the first monitoring cycle. See Section 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The streamlined testing scope relies on ongoing monitoring as the primary backstop for reduced independent testing, and the plan as drafted relies on a limited automated quality signal and does not define a threshold for selling-point feedback. A High Priority Finding is not warranted because the served content was independently reviewed by Validation and bankers review each output before use, which constrains near-term risk; a Low Priority Finding is not warranted because the monitoring backstop is central to the streamlined validation approach. Therefore, a Moderate Priority Finding is justified.
+
+**Finding Table 5**
+- Finding Count: 5
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Implementation Process
+- Finding Priority: Moderate
+- MRM Category: Implementation Process
+- Finding Description: The Implementation Framework and Testing Document (initial submission, 06/03/2026) is incomplete and partly inaccurate:
+  - The document contains incorrect statements: that bankers can edit the selling points, and that user feedback is collected on a 1-to-5 rating scale; the front matter carries a TBD risk rating, the pre-rebrand business unit name, an incomplete sign-off page, and residual template instructions.
+  - The framework description omits components and dependencies: the production cache, the ELZ database and the North American Industry Classification System mapping dependency, upstream ingestion applications, maintenance responsibilities for the ELZ data and the knowledge base, Centralized Application Repository identifiers, and the storage locations for inputs, outputs, and logging (the logging description references tooling whose use is unclear while the Synapse and Datadog logging relied upon is not described).
+  - The controls description is incomplete: guardrails and their testing evidence, access controls for the Synapse, Datadog, and PostgreSQL platforms, vendor contractual data-protection provisions, cache-miss failure handling, contingency treatment of short versus extended interruptions, and user access counts, authorization controls, and training requirements are not described.
+  - The retention description does not distinguish which records carry the stated 7-year retention; logs held in Datadog are purged at each redeployment, at least every 90 days, so their effective retention is the interval between deployments.
+
+  As a result, Validation requests the MO and MD to:
+  - Correct the incorrect statements and the front matter and remove the residual template instructions.
+  - Complete the framework description (components, dependencies, responsibilities, identifiers, and storage locations).
+  - Complete the controls description (guardrails and testing evidence, platform access controls, contractual provisions, failure handling, contingency treatment, and user access and training).
+  - Document the retention strategy, distinguishing which records are retained where, including the redeployment purge of Datadog-held logs.
+  - Upload the updated implementation document, signed and dated, to Archer.
+
+  See Section 11 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The implementation documentation provided is insufficient to complete all aspects of the implementation framework review. A High Priority Finding is not warranted because the controls as documented are expected to be effective and the substantive serving-control deficiencies are raised in the High Priority Finding on Performance of Estimation Method; a Low Priority Finding is not warranted because the document as submitted did not describe the implementation framework and controls in respects material to the review, and the final implementation document with production testing remains to be submitted. Therefore, a Moderate Priority Finding is justified.
+
+#### 5.4.3 Non-Actionable Findings
+
+There are no non-actionable Findings in this report.
+
+## 5.5 Other Discussion Items
+
+The following do not represent immediate model risk and are documented for awareness.
+
+Validation's code review also noted inactive and residual code segments: retrieval re-ranking boost paths for business size and product type that carry no practical effect (business size for lack of usable chunk metadata, product type for lack of the attribute it keys on; the documentation aspect is addressed in the Moderate Priority Finding on Documentation Transparency and Robustness, Section 5.4.2), request parameters that are accepted but not used, legacy methods retained for test compatibility, commented-out logic, a duplicated metadata-formatting block that emits chunk metadata twice into the generation prompt, and an approval flag stored on each selling point that is not used to control display. These do not materially alter served content. Any cleanup or activation of these paths is at the MO's election under the change-management process.
+
+Validation also noted forward-looking change-management items, assessed in Section 10.1 of this validation report: the production deployment runs on a preview version of the provider's interface (Azure OpenAI API version 2025-04-01-preview), whose management should be addressed, and a change of the foundation model or of the embedding model is material under the documentation's own definitions and requires a separate validation activity before changed content is served.
 
 ---
-Sources: MDD Section 10, Tables 1-3; Archer (MO, EMA, risk rating); 07/06/2026 EMA Archer export (full-production submission, saved 20260709); deployed configuration (API version, platform); Governance change-management requirements; IV readiness assessment; 06/18 MO confirmations.
-Gaps: Table 6 labels conformed to the template transcription except "Automatic Decisioning Without Manual Intervention," where the transcription reads "Decommissioning," judged a transcription artifact of the Archer field name (verify against the published template at assembly); documentation update to match the deployed system (Documentation Transparency Finding, Section 5.4); MRG review outcome of the full-production EMA [TBD] (target 08/05/2026; FRBD review triggered per the record); MDD accepted as primary evidence for change-management definitions; EMA change-definition update to align with the MDD [TBD]; stakeholder roles per the EMA: MRO Melissa DeNembo, MRG contact Damien Traore; remaining stakeholder confirmation [TBD]; preview API-version management and foundation-model change path [TBD]; EMA identifier confirmed as 68224437 per Archer (Aditi, 07/09). The MDD cites the pilot-era identifier EMA - 66885813 (Jordan verified against the source 07/13; the EMA - 00000312 in earlier drafts was a transcription error, corrected in the transcription copy); the stale reference is a Documentation Transparency item. History in Non_Findings_and_Discharged_Items.md.
+Sources: MDD Sections 3.3, 5-8, 10; IV readiness assessment; output assessment (judge reliability); PA/SPV materials.
+Gaps: restriction dates keyed to sign-off [TBD]; Performance (High) and Doc Transparency (Moderate as drafted; the misdescription evidence could support High) priorities to be confirmed with Xinyu at report review; the "Jul 2026" month in the Finding names is keyed to expected issuance and should be adjusted if sign-off moves. Root cause: all five findings use the Technical selection. Structure: five findings as of 07/16 (Implementation Process added; the Compliance and Policy Adherence finding folded into the Performance of Estimation Method Finding to keep the report Technical and avoid the Non-Technical / Adverse Event Management vetting escalation, per Jordan; the pilot-change facts and a change-inventory-and-attestation ask are retained in the Performance Finding; the change-definitions items were resolved 07/21 to no concerns on the MDD definitions, with only the EMA alignment, developer field, and effectiveness-score items remaining as EMA corrections). Evidence base: the MDD submitted at kickoff, per the streamlining snapshot (07/16 decision; no re-verification against post-kickoff revisions); the judge-prompt appendix bullets reference the MD's post-kickoff addition and are retained deliberately. Independent faithfulness review completed 07/14 (ticket tracking internal only). Finding tables follow the Model 6788 Sep 2024 style.
