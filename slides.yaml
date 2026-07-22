@@ -1,174 +1,81 @@
-Internal working draft. Component of the Model-7468 GenAI Selling Points Initial Validation report. Part II.
+# Model-7637 Conversational AI in IVR (Knowledgebase Integration) - Meeting Minutes
 
-# 11 Model Implementation Review
+**Date:** 07/22/2026
 
-Implementation Framework and Testing documentation is required for this model. Implementation review for this validation covers Part 1 of the implementation document (implementation framework, production controls, and implementation assumptions). Implementation verification and testing is Part 2, which is due approximately 90 days after implementation and is out of scope for this validation. Throughout this section, Validation's assessment addresses the controls as documented; the operation of the controls is verified in Part 2, except where this validation itself established facts about a control's operation, which are reflected in that control's assessment. The implementation document is not uploaded to Archer; the upload of the updated document, signed and dated, is requested in the Moderate Priority Finding on Implementation Process (Section 5.4 of this validation report). Verification that the document followed the appropriate MRG template version is pending [TBD]. Supporting implementation evidence reviewed alongside the document includes the deployed configuration and a Synapse application programming interface transaction sample (Section 2).
-
-The following implementation documentation was reviewed during this validation activity.
-
-**Table 7 - List of implementation documents reviewed.**
-
-| Document Date | Document Name | Initial or Final Submission | Archer Document ID |
-|---|---|---|---|
-| 06/03/2026 | 6032026 - Implementation Testing Document.docx | Initial | Not available |
-
-## 11.1 Implementation Framework
-
-The implementation framework, as documented in the Implementation Framework section of the model's Implementation Framework and Testing Document, was reviewed with the following observations and conclusions.
-
-| Test Item | Outcome |
-|---|---|
-| 1. Is the documentation regarding the model's implementation framework complete, comprehensive and clear, including documenting any upstream/downstream models and Centralized Application Repository (CAR) IDs for relevant software/platforms? (Note: This evaluation may take into consideration all implementation related policies, procedures or documents maintained by the implementation team.) | No |
-| 2. Are there differences between the development platform/software and production platform/software? (e.g., differences in code language, code libraries, setting selections, etc.) | No |
-| 3. Are the data sources used in production different than those used for development? (Note: Here, the focus is on data sources only. Granular differences in data values, formats, pre-processing, etc. are covered in Section 11.3.) | No |
-| 4. If the answer to Q2 or Q3 is yes, are the differences clearly and completely documented? (If differences exist, summarize the differences below this table and identify if any differences may impact model output and/or use and how those concerns were resolved.) | Not Applicable/Relevant |
-| 5. For dynamic (self-learning) models: Are the computational requirements necessary to support self-training in the production environment sufficiently documented? | Not Applicable/Relevant |
-| 6. If this review is based on the model's final Implementation Framework and Testing document, is the document signed by appropriate parties? (Note: If the current review is based on a preliminary document submission, select "Not Applicable".) | Not Applicable/Relevant |
-
-The implementation document describes the architecture that produces the selling points, including the document preprocessing pipeline, storage, product recommender, selling point generator, and feedback and analytics components, and describes the foundation models.
-
-**Additional Validator Commentary:**
-
-Validation noted gaps in the framework description:
-- The production cache and the ELZ database components are not discussed.
-- Upstream ingestion applications, the North American Industry Classification System mapping dependency, and maintenance responsibilities for the ELZ data and the knowledge base are not identified.
-- Centralized Application Repository identifiers are not disclosed for the software components of the system, including the input and production platforms.
-- The storage locations for model inputs, outputs, and logging are not specified (the specific data warehouses and tables, including the Synapse and Datadog platforms relied upon), which bears on downstream monitoring.
-- The flowchart does not reflect the cache and guardrail components, its Feedback and Analytics component does not accurately represent the user feedback collected, and the foundation-model discussion within the Selling Point retrieval-augmented generation section does not accurately depict the model architecture.
-- The document does not clarify that the model has no upstream or downstream models or tools.
-- The knowledge base discussion does not include the curated selling-point examples or the recommender rule sheet.
-- The document does not discuss how changes to the platforms, systems, or software dependencies could affect model implementation and use.
-- The infrastructure description omits channel-specific system constraints that may affect model operation, such as application programming interface rate limits, service quotas, or network restrictions, where applicable.
-- The document carries incorrect statements, including that user feedback is collected on a 1-to-5 rating scale and that bankers can edit the selling points, along with front-matter gaps: a TBD risk rating in Table 2, the business unit name "Talech Development" in place of "Elavon Development," an incomplete sign-off page, and residual template instructions, for example the retained note "Archer Method IDs and model owners should be filled in per your organization's model inventory."
-
-These are raised in the Moderate Priority Finding on Implementation Process (Section 5.4). On Question 2, the answer reflects the code language, libraries, and platform software as described; the configuration presented in the documentation is the development environment's, and confirmation of the production configuration values is part of the Part 2 verification (Sections 7.3 and 11.3). Question 5 is not applicable because the model is static. Question 6 is not applicable because the review is based on the initial document submission.
-
-## 11.2 Production Controls and Security
-
-The production controls, as documented in the Production Controls and Security section of the model's Implementation Framework and Testing Document, were reviewed with the following observations and conclusions.
-
-#### 1) Privacy and Security Access Controls
-
-Assess and verify the effectiveness of the controls in place to secure access to the production environment, including the production code, production data, model output, data warehouses, workbooks and any other relevant implementation systems/tools/data.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document states that the solution is accessible only through the BCRM platform to users with the required Access Management entitlements; that requests contain only the hashed customer identifier, industry code, and annual revenue, with no sensitive data passed to the application; and that the development code is maintained in a private GitLab repository protected by entitlements. Validation has no concerns with the access controls as documented. The description is incomplete in respects raised in the Moderate Priority Finding on Implementation Process (the document's Section 6.1): the enterprise-level and deployment-level guardrails, the Presidio mechanism, the tools and frameworks used to enforce them, and any testing of their effectiveness in production, and the privacy, security, and access controls for the Azure Synapse, Datadog, and PostgreSQL platforms are not described.
-
-#### 2) Data Input Controls
-
-Assess and verify the effectiveness of the controls in place to ensure the ongoing quality and relevance of data inputs used by the model in the production environment, including controls to ensure data integrity and appropriate handoffs if the inputs are passed between several systems prior to model calculation.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document states that model input data originates from enterprise systems governed by Enterprise Data Governance, with controlled interfaces, validated schemas, input validation, encrypted transmission, hashed or tokenized customer identifiers, no raw Personally Identifiable Information passed to the large language model, and no free-form end-user input. Validation has no concerns with the input controls as documented. The description does not address vendor contractual data-protection provisions, namely that U.S. Bank data is not retained by the provider or used for purposes outside the agreed scope, such as training, fine-tuning, or refining models; this is raised in the Moderate Priority Finding on Implementation Process (the document's Section 6.2).
-
-#### 3) Model Output Controls
-
-Assess and verify the effectiveness of the controls in place to ensure ongoing integrity of the model's output in production. This includes controls to ensure data integrity and appropriate handoffs if the outputs are passed between several systems prior to use. Evaluate the use of automated or manual controls embedded within the code (e.g., macros that review logs for hard failures that stop the process entirely, or soft failures such as warnings or errors that do not stop the process entirely). For models that run daily or in real-time, the focus should be on real-time or near real-time controls to identify changes or errors in the production environment or model output that may negatively impact downstream reliability and use.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | No |
-
-**Validator Commentary:** The implementation document states that outputs are governed through access controls, guardrails, monitoring, and human oversight; that output data is stored in append-only storage under entitlement-managed access and linked to segment identifiers, product mappings, and timestamps; that generated content is constrained to retrieved and validated product documentation with tone, consistency, toxicity, and compliance filtering and a fallback that returns no selling point when context is insufficient; and that trained bankers review or discard outputs before use. These are the document's statements; Validation's assessment differs in two respects established during this validation. First, generated content is not constrained to the retrieved documentation alone: the generation prompt injects product names and descriptions from the product database (Section 7.3). Second, the human review has no technical enforcement: an approval flag is stored on each selling point but is not used to control display, content is generated within each environment at startup and on regeneration events, and no technical control prevents unreviewed content from being served (the High Priority Finding on Performance of Estimation Method). Failure handling for conditions such as a cache miss is not documented, and the real-time logging description is generic where model-specific information is needed: it cites monitoring tools such as Kibana dashboards, whose use is unclear, and does not describe the Synapse and Datadog logging actually relied upon; these are raised in the Moderate Priority Finding on Implementation Process. The controls as documented are not expected to be effective until the review gating and documented review procedure requested under the High Priority Finding on Performance of Estimation Method are in place; the three served selling points with unqualified cost phrasing (Section 8.1) evidence the absence of an effective output gate, and banker review before customer use is the operative mitigant.
-
-#### 4) Contingency Plans
-
-Assess and verify that the model implementation has contingencies for failures or interruptions, over both short-term (under 1 day) and extended (over 1 day) periods. Include discussion of potential impacts to downstream models and how failures or interruptions are communicated to downstream model stakeholders. A clear contingency plan is particularly important for dynamic models.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document states that interruptions surface an error in the BCRM interface, ServiceNow tickets drive investigation and resolution, and the application is classified as non-critical, so outages are not expected to have a material operational impact. Validation has no concerns with the contingency approach as documented for a non-critical, internal-facing application; the document does not state whether the process differs for short-term (under 1 day) versus extended (over 1 day) interruptions, which is raised in the Moderate Priority Finding on Implementation Process.
-
-#### 5) Model Versioning Controls
-
-Assess and verify the effectiveness of the business processes and procedures for initiating a model update (such as a redevelopment, upgrade, refresh, retraining, or recalibration) and, once developed, evaluating and approving the changes and expected impacts. For generic vendor models, this should include a discussion on how and when U.S. Bank is notified of upcoming model releases, and the processes followed for initiating, reviewing, and approving the model releases.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | Yes |
-| Are the controls expected to be effective? | No |
-
-**Validator Commentary:** The implementation document states that redevelopment or version updates require coordination between the Model Developer (MD) and product owners, an assembled project team, and Model Risk Management approval before implementation and use. The versioning process as documented is sound. The controls are not expected to be effective in their current state: production changes during the pilot, including the serving-design change and the rebrand cache regeneration, were made and served without a new submission to Model Risk Management, and the change-inventory-and-attestation and prior-submission requirements are addressed in the High Priority Finding on Performance of Estimation Method.
-
-#### 6) Code Change Management Controls (For custom models or models implemented internally)
-
-Assess and verify the effectiveness of the procedures followed by the implementation team to initiate code changes in the production environment, validate the code for accuracy, and ensure appropriate levels of approval are gained prior to release. This control applies to models implemented internally, including vendor models when U.S. Bank is responsible for deploying vendor-supplied code packages to internally housed software programs or applications.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | Yes |
-| Are the controls expected to be effective? | No |
-
-**Validator Commentary:** The implementation document states that development is managed in the bank's GitLab with dedicated and protected release branches, continuous-integration testing, and releases under the enterprise change management process with ServiceNow approvals before production deployment. The change management process as documented is sound. The controls are not expected to be effective in their current state: the code version that produced the current production content could not be tied to a repository state during this validation, and production changes were deployed during the pilot without a new submission to Model Risk Management; the recording of the deployed code version per generation event and the change-inventory-and-attestation requirements are addressed in the High Priority Finding on Performance of Estimation Method.
-
-#### 7) System Backups (For models implemented internally)
-
-Assess the procedures in place for backing up the production environment, including software, model code, configuration files, and production data, as appropriate. It is critical to ensure redundancy and reliability of the production environment to prevent potential loss or disruption.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | Yes |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document states that the supporting systems are classified as Tier 3 under Technology Resiliency Services tiering, with a recovery time objective of 8 hours and a recovery point objective of 1 hour, and that code and configuration are stored in the enterprise GitLab. Validation has no concerns with the backup arrangements as documented.
-
-#### 8) Data Archiving
-
-It is expected that production data used to support models, including output data generated from models, is saved and archived in accordance with internal or regulatory record retention requirements so that results are reproducible and reportable.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | No |
-
-**Validator Commentary:** The implementation document states that model outputs are stored in the dedicated PostgreSQL database linked to request identifiers, that logging captures interface and large language model interactions, and that records are retained for 7 years. The retention description does not distinguish which records carry the stated retention: the Datadog retention policy is not controlled by the model team, logs held in Datadog are purged at each redeployment, which occurs at least every 90 days and often more frequently for security remediations, so their effective retention is the interval between deployments, and the retention strategy for the end-to-end generation workflow (inputs, retrieved content, intermediate outputs) is not described. The archived data is not in a format that supports reportable traceability exports. The controls are not expected to be effective in their current state against the control's purpose of reproducible and reportable results: the development-environment evaluation could not be reproduced during this validation because the underlying data is no longer available, and generation-time artifacts are not retained. These are raised in the Moderate Priority Finding on Implementation Process, and the retention of generation-time artifacts is requested under the High Priority Finding on Performance of Estimation Method.
-
-#### 9) Software Updates (For models implemented internally)
-
-Assess the procedures and controls in place for managing software-related updates and bug fixes to the programs and platforms used in the production environment, to ensure the model continues to function as expected. Examples include upgrading to a new SAS or Python version, pushing out a critical bug fix for production software, or installing a new version of a software package required by the model.
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | Yes |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document states that required software versions are specified in a requirements file used to build the deployment container, so updates occur only through intentional, tested, and model-owner-approved changes. Validation has no concerns with the software update controls as documented.
-
-#### 10) Other Controls: User Access and Training
-
-| Test Item | Outcome |
-|---|---|
-| Is the documentation and evidence surrounding the controls sufficient? | No |
-| Are the controls expected to be effective? | Yes |
-
-**Validator Commentary:** The implementation document does not describe the expected number of users with access to the application, the controls ensuring only authorized use, or whether users must meet knowledge requirements or complete risk-awareness training before access; these are raised in the Moderate Priority Finding on Implementation Process.
-
-## 11.3 Implementation Verification and Testing
-
-Per the governing template, this section applies to an initial validation only when implementation testing is complete and the final Implementation Framework and Testing document has been received. Neither has occurred, so this section is not required for this validation and will be performed once the final document, due approximately 90 days after production use, is received. Items deferred to that review: the production-parity check, including a re-run of the character-for-character cache-parity test against the current Elavon-branded cache; confirmation that the reviewed configuration matches production (the documentation shows a development environment setting); verification of cache-miss and new-segment handling (Section 8.1 of this validation report); and confirmation of whether any records needed for reproducibility exist only in the purged Datadog logs.
-
-## 11.4 Implementation Assumptions and Limitations
-
-Per the governing template, the full review of this section follows the final Implementation Framework and Testing document; Validation reviewed the implementation assumptions presented in the initial submission, with the final review to follow the final document.
-
-The principal implementation assumption is that production serving is cache-only with no generation at serve time, so the served content is limited to the cached entries. Cached selling points do not expire and there is no automatic invalidation; removing or refreshing a cached selling point is a manual action taken under the change process when source content changes, and the absence of automatic expiry is consistent with the static design.
-
-**Additional Validator Commentary:**
-
-Selling points are generated by the model within each environment, including production, at startup and on regeneration events, and no technical control prevents unreviewed content from being served; the production cache was fully regenerated when the source documents were rebranded and was served before review. The Model Owner (MO) has committed that any knowledge base change or new or updated selling point receives subject matter expert review and change management before it is served; this commitment is not yet supported by a technical control or a documented procedure, and the review-gate, review-record, and regeneration-notification requirements are addressed in the High Priority Finding on Performance of Estimation Method (Section 5.4). The documentation does not yet record the cache-only serving design, the manual refresh mechanism, or the review governance for cache changes, which Validation raises under the Moderate Priority Finding on Documentation Transparency and Robustness (Section 5.4).
+**Attendees:**
+- Model Owner and Platform: John Lorence, Baloo Narayanan, Scott Hekman
+- Model Risk Governance (MRG): Sana Ahmed
+- Business Line Model Risk Officer: Fion Wang
+- Model Risk Management (MRM) Validation: Jordan Low, Aditi Pandey
 
 ---
-Sources: Implementation Framework and Testing Document (06/03/2026, initial submission); MDD Sections 6.2 (cache, environment block), 7.2 (guardrails); deployed configuration (platform, access, retention); 06/30 kickoff (Part 1/Part 2 split, cache design, data retention); Synapse API transaction sample; IV readiness assessment; Aditi's Part 1 implementation review integrated 07/16 with control assessments rescoped to the controls as documented.
-Gaps: Archer document ID for Table 7 and Archer attachment confirmation [TBD]; implementation-document MRG template version verification [TBD]; retention period reconciliation (7 years vs 5 years) [TBD]; implementation-document gap list carried in the Moderate Priority Finding on Implementation Process (Section 5.4), reconciled 07/21 with the secondary validator's expanded Finding 5 items (foundation-model depiction, knowledge base examples and rule sheet, dependency-change impacts, channel constraints, generic logging, non-reportable traceability exports); Part 2 verification items listed in 11.3 [Part 2].
+
+## Purpose and Refocus
+
+- The meeting was held to recalibrate on Model-7637 following a period in which the team's focus had been on other GenAI models.
+- John noted the intent to move Model-7637 forward at a faster pace and to be ready to launch as soon as feasible.
+- Baloo confirmed the solution is not agentic. It is a question-and-answer agent that retrieves information from the relevant knowledge base (KB) article and reads it back to the customer, with no tool orchestration, tool calling, or autonomous decision-making beyond the single retrieval-and-response step. Customers may ask follow-up questions.
+
+## Validation Approach: Provisional Approval for a Pilot
+
+- It was clarified that a Provisional Approval (PA) can support either a pilot (limited deployment) or a full implementation (full rollout), and that both are subject to MRG approval.
+- Fion Wang, the Model Risk Officer supporting the business line, noted that a Provisional Approval is generally followed by a full review, typically within six months, that the approach requires business justification, and that it is subject to MRG approval before Validation begins.
+- Fion noted that a Provisional Approval for full implementation requires a stronger business justification, whereas a pilot is the approach generally used to mitigate model risk given the faster, higher-level review. The choice is a balance between mitigating risk and speed to market.
+- John noted that the initial launch will necessarily involve a substantially smaller subset of articles rather than the full knowledge base, which is expected to be built out over time, so the initial phase is effectively a pilot.
+- The group agreed a pilot is the more suitable approach for the initial launch, with a phased rollout during the pilot period to gradually increase the number of knowledge base articles. A pilot can run up to twelve months and can include multiple phases.
+
+## Timeline and Documentation
+
+- Current Archer dates: Development Documentation due 07/30/2026, Initial Validation (IV) due 10/16/2026, and Expected Date of First Use 10/30/2026. The two-week gap between the validation due date and first use reflects the time needed to set up the technology.
+- Jordan explained that the twelve-week lead time reflects that this is a medium-risk model; the streamlined shorter timeline applies to low-risk models. Jordan offered to work toward a ten-week timeline for the Initial Validation depending on the completeness of the documentation.
+- The primary documentation is the Model Development Document, which is more comprehensive and lengthier than the Provisional Approval request form. Documentation prepared for prior GenAI models can be used as a starting point.
+- Jordan will send the template location after the meeting and resend the earlier list of initial questions.
+- John and Baloo proposed dedicated working sessions over the next two weeks to complete the documentation together.
+- It was noted that MRG and regulatory requirements call for evidence of adequate performance and guardrail testing on the actual model using real-world queries.
+
+## Model Scope: Multiple Business Lines Under One Record
+
+- The scope is three business lines, each with its own Interactive Voice Response (IVR) entry point, served by the same model: 24-Hour Banking, Cardmember Service, and MPS North America.
+- Jordan raised, as a question for MRG, whether the three business lines and their three use cases could be covered under a single model record and Estimation Method Assessment (EMA).
+- Sana confirmed that multiple business lines can be captured within one Estimation Method Assessment, consistent with prior experience covering multiple business lines under one record for other GenAI models, and that Validation can consolidate the validation activity across the business lines.
+- The business line may include as full a rollout as it wishes, provided the covered business lines are specified in the request. The current scope is the three business lines listed above.
+
+## Estimation Method Assessment Update
+
+- The current Estimation Method Assessment reflects full production rather than a pilot.
+- Sana confirmed the existing Estimation Method Assessment can be updated to reflect pilot use with a rollout plan, rather than submitting a new one.
+
+## Knowledge Base Articles, Tags, and Performance Testing
+
+- Sana confirmed there is no MRG limit on the number of knowledge base articles during the pilot period.
+- The model owner states an approximate article count in the Provisional Approval request. Validation will require a proportionate amount of Subject Matter Expert (SME) testing across the article universe: a larger article count requires more SME testing.
+- Validation requested article tags, for example categorical labels such as credit card or debit card, because articles may be duplicative across versions of the same topic, and tags support representative performance testing.
+- Validation reiterated the request for article counts across the three business lines, confirmation of which articles are customer-facing, and article tags. John is coordinating with Liz Eisert on the article inventory.
+- Performance testing was identified as the main bottleneck. Accuracy and completeness of customer queries and model responses need to be assessed, through SME review of queries or an automated evaluation approach.
+- Baloo noted the team would likely need to set up a DeepEval evaluation framework, and that resourcing to build the automated testing and evaluation process still needs to be identified. Resourcing was taken offline.
+
+## Environment Availability
+
+- Scott confirmed there is no User Acceptance Testing (UAT) environment available to share at this time.
+- The model will be deployed to the AWS UAT environment at a later point. The knowledge base source (ServiceNow) will remain the production environment, as there is no separate ServiceNow test environment to connect to.
+
+## Model Architecture
+
+- Baloo confirmed the model uses Nova Sonic for speech and Claude Haiku for reasoning. The specific Haiku version is to be confirmed.
+
+---
+
+## Action Items
+
+- Provide a prioritized list of the must-have questions and information for the Provisional Approval request form, so the team can collect the information by the end of August. Owner: Validation (Jordan, Aditi). Target: as soon as possible.
+- Send the Model Development Document template location and resend the earlier list of initial questions. Owner: Validation (Jordan). Target: after this meeting.
+- Update the Estimation Method Assessment as Pilot and enter the pilot details. MRG confirmed the existing EMA can be edited and has sent it to the Model Owner for updating; the risk rating is unaffected. Owner: Model Owner (John). Target: TBD.
+- Provide article counts for the three business lines, confirmation of customer-facing articles, and article tags, coordinating with Liz Eisert. Owner: Model Owner (John). Target: TBD.
+- Align offline on performance testing setup and resourcing for the automated testing and evaluation process before committing to the timeline. Owner: Model Owner and Platform (John, Baloo, Scott) with Validation. Target: TBD.
+- Hold dedicated working sessions over the next two weeks to progress the documentation. Owner: Model Owner and Platform (John, Baloo) with Validation. Target: next two weeks.
+- Assist the business line in drafting the Provisional Approval request. Owner: Model Risk Officer (Fion). Target: TBD.
+
+## Items Deferred to Next Session or Email
+
+- Resourcing and tooling for the automated testing and evaluation framework, taken offline.
+- Sharing of a User Acceptance Testing environment for Validation review, pending the future AWS UAT deployment.
