@@ -1,27 +1,13 @@
-# Cover Letter
 
-**Jordan Low**
-VP, Quantitative Model Analyst, AI CoE Validation, Model Risk Management
-917-378-3239 | jordan.low@usbank.com
+**Jordan Low** - VP, AI CoE Validation (Model Risk Management), U.S. Bank. MIT (five degrees), CFA Charterholder. 20+ years spanning hands-on AI/ML engineering, quantitative research leadership (led a 20-person team at Credit Suisse Asset Management), and hedge fund CIO (built a full AWS/Azure ML platform).
 
----
+**Recent accomplishments:**
 
-Hiring Team
-AI Platform Chief Architect (Req 2026-0020176)
-Digital and Emerging Technology Architecture
+- Co-authored the bank's GenAI validation standards; the GenAI development template drew positive Federal Reserve feedback ("laid out good expectations for GenAI").
+- Validated the bank's first approved GenAI model; his LLM-based evaluation approach became the observability standard reused across the production AI portfolio.
+- Advises the first-line AI Enablement team on risk-tier-aligned guardrail templates and their documentation standard for the enterprise Responsible AI platform, grounded in hands-on guardrail and red-team testing; participates in the bank's TrustWise platform evaluation.
+- Synthesized the bank's GenAI gateway architecture (authentication, logging, PII/PCI scanning, guardrail placement) into reference material shared with the first line; led his team's migration to Azure API Management.
+- Owns AI CoE ID 1286 (MRM-AI Validation): the GenAI validation-automation toolset - LLM-as-judge evaluation agents, a DeepEval-backed evaluation framework, topic modeling - engineered for 8x validation throughput.
+- Evaluates production agentic AI end-to-end (Amazon Connect / Q in Connect orchestration, Bedrock AgentCore with MCP, custom Lambda tools) and is defining the bank's evaluation criteria for agentic AI.
 
----
-
-I am applying from inside the bank, and from an unusual angle: for the past three years I have been the person who evaluates whether our GenAI architecture actually holds up in production. That vantage point is exactly what this role needs, because the architect who has seen where AI systems fail is the architect who knows which standards matter.
-
-The reference-pattern work this role owns is work I have already been doing. I synthesized the bank's GenAI gateway architecture, authentication, logging, PII/PCI scanning, and guardrail placement, into reference material now shared with the first line. I co-authored the GenAI Model Development Template, roughly a third of the firm-wide standard, which received positive Federal Reserve feedback. As validator of the bank's first approved GenAI model, I established the LLM-based evaluation approach that became the observability standard reused across multiple production models: one recommendation that became a cross-model reference pattern, which is the architecture convergence this JD describes.
-
-On the agentic side, I evaluate the bank's production agentic AI end to end, from Amazon Connect orchestration through Bedrock AgentCore Gateway (MCP) tool dispatch, and I am defining the bank's evaluation criteria for agentic AI on a dated roadmap: enterprise training requirements this November, and a banking-customized agentic evaluation release of the validation toolset targeted for March 2027. The JD asks for someone who architects the agentic layer proactively rather than retrofitting it; that is the posture I already work in.
-
-Two things I would bring that few architecture candidates can. First, regulatory fluency: I have defended our AI program through a third-line audit and a regulatory examination, so the guardrails I define are ones I know will survive scrutiny. Second, hands-on depth: I still write production Python daily, from LLM-as-judge evaluation agents to a DeepEval-based adversarial testing harness, so my architectural judgments come from running code, not diagrams alone.
-
-Before U.S. Bank I led a 20-person quantitative research team at Credit Suisse Asset Management and built an institutional asset manager's entire technology stack as founder and CIO. I know how to set technical direction, develop talent, and hold a long-term architecture together across years.
-
-I would welcome the chance to discuss how this second-line perspective can strengthen the first line's architecture from day one.
-
-Jordan Low
+**Depth across:** agentic AI and RAG architecture, AI observability and guardrails, model governance, and hybrid/multi-cloud (Azure primary, AWS, on-prem Kubernetes).
