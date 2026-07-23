@@ -1,59 +1,27 @@
-# Jordan Low
-917-378-3239 · jordan.low@usbank.com
+# Cover Letter
 
-## SUMMARY
-Technology-and-governance leader who defines the architecture, standards, guardrails, and reusable reference patterns for trustworthy enterprise GenAI. MIT (five degrees), CFA Charterholder, 20+ years spanning hands-on AI/ML engineering, quantitative-research leadership, and model risk. Synthesized the bank's GenAI gateway architecture into shared reference material; co-authored the bank's GenAI validation standards (positive Federal Reserve feedback); set the observability standard now reused across the production AI portfolio; built production AI/ML platforms and the bank's GenAI validation-automation toolset. Deep across agentic AI, observability and monitoring, model governance, and the Azure/AWS AI stack.
+**Jordan Low**
+VP, Quantitative Model Analyst, AI CoE Validation, Model Risk Management
+917-378-3239 | jordan.low@usbank.com
 
-## TECHNICAL SKILLS
-* **GenAI & Agentic AI:** Retrieval-Augmented Generation (RAG), agent orchestration, LangChain, LangGraph, Model Context Protocol (MCP), LLM tool/function integration, LLM-as-judge evaluation agents, DeepEval, automated prompt optimization (DSPy / GEPA), guardrail / hallucination / red-team testing, embeddings and vector retrieval, hybrid search (BM25, vector, Reciprocal Rank Fusion), LlamaIndex, Giskard, Azure Document Intelligence, OpenAI / Azure OpenAI / Anthropic APIs, Apache Lucene-based search (MongoDB Atlas Search, Elasticsearch), vector databases (ChromaDB, Elasticsearch, MongoDB Atlas), UMAP, HDBSCAN, topic modeling, agentic voice/vendor platforms (Amazon Connect / Q in Connect, Cresta, Eleven Labs)
-* **AI Observability & Governance:** model performance / drift / reliability monitoring, evaluation frameworks, model governance (versioning, lineage, explainability, auditability), Responsible AI / guardrail platforms (Lumenova RAI/Beacon, Nimbus, TrustWise Harmony AI Control Tower), GenAI validation standards and feasibility review
-* **Cloud & MLOps:** Azure (Machine Learning / ML Studio, model registry, Data Factory, DevOps, Azure OpenAI gateway), AWS (Bedrock, Lambda, EC2, RDS, Redshift), secrets management and API key rotation, hybrid and multi-cloud architecture (Azure primary, AWS, on-prem Kubernetes), Apache Airflow, Docker / Kubernetes, GitLab, CI/CD, feature stores, Snowflake, Databricks, Kafka
-* **Machine Learning:** TensorFlow/Keras, PyTorch, scikit-learn, XGBoost, NLP, neural networks, MLOps
-* **Programming:** Python (NumPy, Pandas, SciPy), SQL, R, C/C++, Java, JavaScript, Scala, Bash
+---
 
-## EXPERIENCE
+Hiring Team
+AI Platform Chief Architect (Req 2026-0020176)
+Digital and Emerging Technology Architecture
 
-### U.S. Bank | Vice President, Quantitative Model Analyst | AI CoE Validation, Model Risk Management | 2023 - Present
+---
 
-**GenAI Architecture, Standards & Governance**
-* Advise the first-line AI Enablement team on guardrail configurations for the enterprise Responsible AI platform, including risk-tier-aligned guardrail templates and their documentation standard, grounded in hands-on guardrail testing (prompt injection, PII, topic controls); participate in the bank's TrustWise platform evaluation alongside the AI Enablement lead.
-* Synthesized the bank's GenAI gateway architecture (authentication, logging, PII/PCI scanning, guardrail placement) into reference material shared with the first-line team; led enablement of Azure OpenAI gateway access for the team and its migration to Azure API Management (enabling GPT-5.1 access).
-* Manage Azure OpenAI gateway access and key rotation for the validation team under AI CoE ID 1286, covering secrets handling across the DEV/UAT/PROD onboarding path.
-* Co-authored the bank's GenAI validation templates and standards; the GenAI Model Development Template received positive Federal Reserve feedback that the bank "laid out good expectations for GenAI."
-* As validator of 24-Hour Banking Agent Assist, the first GenAI model approved at U.S. Bank, established the LLM-based evaluation approach that was adopted as the observability standard and reused across the PayVIEW GTM and MMP ChatBot and other models, scaling a single recommendation into a cross-model reference pattern.
-* Lead MRM's evaluation of the enterprise Responsible AI platform (Lumenova) as a formal platform assessment, alongside Nimbus and TrustWise reviews, across RAI for offline evaluation and Beacon for real-time observability and guardrails: benchmarked ingress guardrails (prompt injection, PII, topic) and egress scoring (Trust Score, Coherence Score, groundedness) against ground-truth datasets using LLM judges I built, results that drove the vendor to strengthen its guardrails; partner with the first-line AI Enablement team on guardrail and entitlement design.
-* Championed a CI/CD-style change-control process for the Conversational AI in IVRs dispute agent: a DeepEval regression suite as the automated quality gate before UAT promotion, using YAML-configured test definitions I recommended so the business line can make rapid non-material changes within validation control, tracked in Jira with validation sign-off.
+I am applying from inside the bank, and from an unusual angle: for the past three years I have been the person who evaluates whether our GenAI architecture actually holds up in production. That vantage point is exactly what this role needs, because the architect who has seen where AI systems fail is the architect who knows which standards matter.
 
-**Observability, Evaluation & Agentic AI**
-* Evaluate production agentic AI end-to-end, with hands-on access to the full vendor stack of the Conversational AI in IVRs dispute agent: Amazon Connect / Q in Connect orchestration, Claude Haiku 4.5, Amazon Nova Sonic 2 (speech) and Nova Pro V1 (real-time monitoring), and custom AWS Lambda tools dispatched via the Bedrock AgentCore Gateway (MCP) to the Casper backend API, reviewing tool code, flow diagrams, prompts, and guardrails.
-* On a multi-turn voice-agent (dispute-intake) system, independent code and evaluation review surfaced 12 of 33 test cases misaligned despite all reporting success, leading the business line to revise production prompts and Lambda logic.
-* Conduct deep LLM and agent evaluation across a portfolio of production GenAI applications: RAG assistants over 65k+ article knowledge bases, conversational voice agents, and entity resolution.
-* Hold developer-level knowledge of the shared codebase originated in 24-Hour Banking Agent Assist and reused across the PayVIEW GTM and MMP ChatBot and other models; after the model developer's departure, enable fast, low-risk change recommendations and continued deployment of the dependent models through the knowledge gap, and helped defend 24-Hour Banking Agent Assist through a third-line internal-audit review (Corporate Audit Services) escalated to SVP level.
-* Monitor two production GenAI document-intelligence models for drift, DocuSign Insight (extracting obligations from government contracts) and Global Corporate Trust and Custody (GCTC) Credit Ratings Extraction (extracting credit-rating eligibility from governing documents to feed Internal Liquidity Stress Testing and meet Federal Reserve requirements), and deployed an independent GenAI document-intelligence model to benchmark both, recommend improvements, and close gaps.
+The reference-pattern work this role owns is work I have already been doing. I synthesized the bank's GenAI gateway architecture, authentication, logging, PII/PCI scanning, and guardrail placement, into reference material now shared with the first line. I co-authored the GenAI Model Development Template, roughly a third of the firm-wide standard, which received positive Federal Reserve feedback. As validator of the bank's first approved GenAI model, I established the LLM-based evaluation approach that became the observability standard reused across multiple production models: one recommendation that became a cross-model reference pattern, which is the architecture convergence this JD describes.
 
-**AI Validation Automation | AI CoE ID 1286 (MRM-AI Validation), Initiative Owner**
-* Own AI CoE ID 1286 (MRM-AI Validation): wrote the initial validation-automation codebase and lead its productionization with the team into a standardized GenAI Validation Automation Playbook and toolset adopted across MRM.
-* Built the core toolset: reusable codebases for topic modeling, synthetic-data generation, and LLM-as-judge RAG evaluation; engineered a DeepEval-backed offline evaluation framework spanning RAG quality (RAGAS-style relevancy, correctness, faithfulness, completeness) and agentic behavior (task/goal completion, tool-selection accuracy, role adherence, plus safety and guardrail checks), proven on production systems: Conversational AI in IVRs (Dispute Claim Submission), the voice dispute-intake agent, and Conversational AI in IVR (Knowledgebase Integration), the knowledgebase RAG assistant.
-* Independently designed, coded, and deployed LLM-as-judge evaluation agents (Python) that automatically check production model outputs against ground truth at scale, using vector/hybrid retrieval and automated prompt optimization (DSPy / GEPA).
-* Built a GenAI validation codebase (Azure Document Intelligence, LlamaIndex, Giskard) engineered to absorb an 8x increase in validation throughput; built an agentic workflow (GitHub Copilot custom agent) that organizes the team's model inventory and documentation and rapidly drafts validation reports, meeting minutes, and presentation decks.
-* Research and define the bank's evaluation criteria for agentic AI: synthesized major industry frameworks with the evaluation tooling landscape; built a DeepEval-based adversarial guardrail harness for a production voice agent (19 metrics across conversation quality and guardrail dimensions); developing banking-specific judge prompts and metric configurations on top of the published library (for example, scoring a correct refusal of an out-of-scope request as correct rather than unhelpful), feeding enterprise AI training requirements (November 2026) and the banking-customized agentic evaluation release of the validation toolset (target 03/31/2027).
+On the agentic side, I evaluate the bank's production agentic AI end to end, from Amazon Connect orchestration through Bedrock AgentCore Gateway (MCP) tool dispatch, and I am defining the bank's evaluation criteria for agentic AI on a dated roadmap: enterprise training requirements this November, and a banking-customized agentic evaluation release of the validation toolset targeted for March 2027. The JD asks for someone who architects the agentic layer proactively rather than retrofitting it; that is the posture I already work in.
 
-**Enablement & Talent Development**
-* Designed and delivered a 4-month GenAI Immersion Program for ~10 rotational analysts across MRM divisions (including offshore consultants), with mentorship, office hours, and governance reporting to senior leadership; mentor and lead 2 analysts on LangChain/LangGraph, RAG, and LLM evaluation.
-* Created and delivered the GenAI Performance Evaluation training series, two enterprise sessions (Use Cases; Code Demo) in May 2025, praised for its in-depth curriculum and clear narratives, introducing Giskard, UMAP, HDBSCAN, and LLM-as-judge evaluation, tooling now used in production validations.
+Two things I would bring that few architecture candidates can. First, regulatory fluency: I have defended our AI program through a third-line audit and a regulatory examination, so the guardrails I define are ones I know will survive scrutiny. Second, hands-on depth: I still write production Python daily, from LLM-as-judge evaluation agents to a DeepEval-based adversarial testing harness, so my architectural judgments come from running code, not diagrams alone.
 
-### Adjunct Professor | Fordham University & Stevens Institute of Technology | 2018 - Present
-* Teach graduate courses in generative AI, applied data science, business analytics, and computational finance (Python-based); oversubscribed cohorts of working professionals, 4.8/5.0 average rating.
-* Curriculum covers data warehousing, end-to-end RAG, MongoDB Atlas vector and hybrid retrieval (BM25 + vector, Reciprocal Rank Fusion), embeddings and sentence transformers, automated prompt optimization (DSPy / GEPA), LLM evaluation with Giskard, and UMAP/HDBSCAN topic modeling, taught with working, student-built code.
+Before U.S. Bank I led a 20-person quantitative research team at Credit Suisse Asset Management and built an institutional asset manager's entire technology stack as founder and CIO. I know how to set technical direction, develop talent, and hold a long-term architecture together across years.
 
-### Wave Hill Capital Management | Chief Information Officer | 2012 - 2023
-* Built and ran the full technology stack for a machine-learning-driven hedge fund. Production AI/ML platform: migrated to AWS/Azure with Docker; orchestrated Apache Airflow ETL moving terabytes (CSV/Parquet/SQL Server to MongoDB) in three months; CI/CD; modernized legacy Python 2 / C++ / Perl to Python 3.
-* Built a SEC 10-K/10-Q ingestion and NLP pipeline feeding three ML applications (13F-aligned stock recommender, context-aware sentiment analysis, LDA trend analysis); developed neural-network stock-prediction and TensorFlow/Keras option-pricing models.
+I would welcome the chance to discuss how this second-line perspective can strengthen the first line's architecture from day one.
 
-### Earlier
-* **Credit Suisse Asset Management | Head of Quantitative Research (2006 - 2012):** led a 20-person quantitative-equities team managing $4B+ globally; built a centralized predictive-factor feature store and market-neutral portfolios (Ledoit-Wolf covariance work, now standard in scikit-learn).
-* **Deutsche Bank | Vice President, Proprietary Trading (2004 - 2006):** built statistical-arbitrage systems in C++ (FIX protocol) running $100M+, plus a distributed-computing grid harnessing idle desktops for off-hours compute.
-
-## EDUCATION & CREDENTIALS
-* **Massachusetts Institute of Technology**, five degrees, GPA 5.0/5.0. M.Eng., Computer Science; B.S. in Computer Science, Management (Finance), Economics, and Mathematics.
-* **CFA Charterholder** · International Mathematical Olympiad (Third Prize) · Active daily coder
+Jordan Low
