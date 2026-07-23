@@ -1,13 +1,49 @@
 
-**Jordan Low** - VP, AI CoE Validation (Model Risk Management), U.S. Bank. MIT (five degrees), CFA Charterholder. 20+ years spanning hands-on AI/ML engineering, quantitative research leadership (led a 20-person team at Credit Suisse Asset Management), and hedge fund CIO (built a full AWS/Azure ML platform).
+## Part 1: Must-Have for the PA Request
 
-**Recent accomplishments:**
+### 1. Model Purpose and Pilot Scope
 
-- Co-authored the bank's GenAI validation standards; the GenAI development template drew positive Federal Reserve feedback ("laid out good expectations for GenAI").
-- Validated the bank's first approved GenAI model; his LLM-based evaluation approach became the observability standard reused across the production AI portfolio.
-- Advises the first-line AI Enablement team on risk-tier-aligned guardrail templates and their documentation standard for the enterprise Responsible AI platform, grounded in hands-on guardrail and red-team testing; participates in the bank's TrustWise platform evaluation.
-- Synthesized the bank's GenAI gateway architecture (authentication, logging, PII/PCI scanning, guardrail placement) into reference material shared with the first line; led his team's migration to Azure API Management.
-- Owns AI CoE ID 1286 (MRM-AI Validation): the GenAI validation-automation toolset - LLM-as-judge evaluation agents, a DeepEval-backed evaluation framework, topic modeling - engineered for 8x validation throughput.
-- Evaluates production agentic AI end-to-end (Amazon Connect / Q in Connect orchestration, Bedrock AgentCore with MCP, custom Lambda tools) and is defining the bank's evaluation criteria for agentic AI.
+- IVR purpose, intended use, and confirmation it is customer-facing; interaction channels and use cases.
+- Pilot scope: the three business units (24-Hour Banking, Cardmember Service, MPS North America), expected caller volume and percentage, and knowledge base (KB) article counts per business line with customer-facing designation and topic tags.
+- Pilot period (start and end dates) and the phased article rollout plan.
+- Success criteria, pilot metrics, and monitoring cadence.
+- Human oversight and escalation, including live-agent fallback and customer opt-out.
 
-**Depth across:** agentic AI and RAG architecture, AI observability and guardrails, model governance, and hybrid/multi-cloud (Azure primary, AWS, on-prem Kubernetes).
+### 2. Business Justification and Risk Mitigation
+
+- Business case for proceeding under a PA ahead of full validation, including speed to market.
+- Rationale for the pilot structure: start with a small article subset and expand in phases only as live performance and feedback data supports it, with the criteria gating each expansion phase.
+- Risks prior to validation completion and their mitigations, covering at minimum: hallucinated responses, incorrect KB content, sensitive information disclosure, and retrieval failure (wrong article selected).
+
+### 3. Knowledge Base Data
+
+- Article sources (ServiceNow, Salesforce, or other), ownership, governance, and the content approval workflow.
+- Article counts and topic distribution per business line; update frequency and how updates flow into the model.
+
+### 4. Model Design
+
+- Architecture diagram; reasoning LLM (Claude Haiku, version confirmed), speech model (Nova Sonic), and hosting platform.
+- System prompt and prompt templates.
+- Retrieval approach, documenting what is configurable versus AWS-managed; where AWS does not expose details, state that and the efforts made to obtain them.
+- Confirmation the tool set is limited to the out-of-the-box Escalate and Complete functions.
+- Business line tag routing, including whether the tag is a hard filter at the retrieval layer.
+- How retrieval is invoked on each conversation turn to handle multiple questions in one call.
+- Guardrails beyond built-in foundation model safety features (hallucination, toxicity, privacy, information security, fairness).
+
+### 5. Performance Evidence
+
+- Pre-pilot Subject Matter Expert (SME) evaluation: sample size and selection relative to the article universe (proportionate to pilot article count), metrics (accuracy mandatory), rating rubric, and aggregated results.
+- Guardrail testing (required for customer-facing use): tests conducted, results, and conclusions, proportionate to pilot scope.
+
+### 6. Implementation Controls
+
+- Platform, run frequency, and process owner.
+- Feedback collection, incident management, escalation, and rollback plan (including reverting to the current-day IVR).
+
+### 7. Anticipated Changes During Pilot
+
+- Changes expected during the pilot (rollout phases, prompt adjustments, model version updates); material changes require returning to Model Risk Management before implementation.
+
+### 8. Documentation and Milestones
+
+- Table of documentation provided with the PA request, and a table of key milestones to full validation with expected delivery dates.
