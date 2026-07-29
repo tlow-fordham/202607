@@ -81,30 +81,50 @@ There are no actionable issues in this report.
 
 **Finding Table 2**
 - Finding Count: 2
-- Finding Name: Model 7468 Initial Validation Jul 2026 - Coding and Calculation Errors
-- Finding Priority: Low
-- MRM Category: Coding and Calculation Errors
-- Finding Description: Validation reviewed the model code and identified coding and configuration defects in the feedback, evaluation, and retrieval components, together with inactive code paths that are not connected to the operating model:
-  1. The banker feedback collection committed at the Provisional Approval as a risk mitigant did not operate. The business line intended to collect free-text feedback, but no pathway existed: text entered under the "Other reason" rejection is not transmitted from the Salesforce interface, which was not known until Validation requested the feedback data. The MO states this has since been enabled; Validation has not verified the enablement or observed accumulated feedback.
-  2. The evaluation code contains defects. These computations play no part in serving, so production content is unaffected; they matter because the monitoring plan carries several of these metrics forward:
-    - The context-similarity computation substitutes the first product document when the product-title match fails, so scores can be computed against the wrong context, and it does not run against the retrieved chunks supplied to generation.
-    - The sensitivity computation returns a default of 1.0 when a comparison set is empty, making the industry sensitivity structurally 100 percent.
-    - Retrieved document names are not deduplicated before scoring.
-    - The judge evaluation records a fixed mid-range score when the model response cannot be parsed, so a recorded score is not always a judgment.
-    - The judge evaluation builds a recommended-features instruction that the prompt template has no placeholder for, so it never reaches the judge.
-  3. The production retrieval index is misconfigured for the corpus size: 100 partitions over a 32-chunk corpus, where standard guidance for this index type would place the count at one. Most partitions are empty, the index provides no speed benefit, and it can return an incomplete chunk set. The effect on current outputs is contained because production serves cache-only and Validation reviewed every generated output; the configuration governs retrieval again at any regeneration.
-  4. The code carries paths that were built but never connected: the business-size and product-type re-ranking boosts, which cannot operate because the metadata the first depends on is not populated and the data model lacks the attribute the second keys on; unused request parameters; legacy methods; commented-out logic; a duplicated block that emits chunk metadata twice into the generation prompt; and an approval flag stored on every output but never read. These do not affect served content, and they would activate untested behavior if the data or configuration they depend on changes.
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Monitoring
+- Finding Priority: Moderate
+- MRM Category: Monitoring
+- Finding Description: The ongoing monitoring plan defines performance thresholds for several metrics, but Validation identified the following concerns, detailed in Section 12 of this validation report:
+  1. Signal quality: the plan's primary automated quality metric, the large language model as-a-judge evaluation, provides limited discriminating signal and does not support a performance conclusion (raised in the High Priority Finding on Performance of Estimation Method, and assessed in Section 8.1 of this validation report); and the structured thumbs up or down feedback is oriented to the product recommendation, while the free-text feedback that could serve as a selling-point quality signal is treated as a secondary annual review with no defined threshold or acceptance criteria.
+  2. Metric hygiene:
+    - The outcomes-analysis metrics are restated in the Stability Testing section as stability metrics for which they are not appropriate; the judge evaluation, the subject matter expert review, document mapping quality, and retrieval precision and recall measure correctness rather than stability.
+    - The plan frames the automated content-quality metrics (document mapping, context similarity, and the judge score) as annual ongoing monitoring, although the model serves a fixed cache regenerated only at cache rebuilds, so these metrics reflect cache quality at build time and yield no new signal between regenerations. The plan does not distinguish build-time cache-acceptance checks from genuine ongoing-drift signals.
+    - The overall conclusion in Section 4.2.2 does not incorporate several metrics the plan's own metrics section defines in Section 6.1, namely the user comments, the application programming interface transaction metrics, the feedback data, and the Datadog log data.
+  3. Conclusion methodology: the criterion for the overall performance conclusion is ambiguous, because the metric weighting is described separately from, and does not reconcile with, the criteria for assigning the green, amber, and red outcomes; and the plan states that segment-level results are diagnostic and do not independently trigger breaches unless a consistent pattern emerges, without defining when a consistent segment-level pattern escalates to an overall breach.
+  4. Baselines and thresholds:
+    - Thresholds are provided for the subject matter expert evaluation, the judge score, context similarity, retrieval and document mapping, and the thumbs-down rate, but not for the user free-text comments, the application programming interface transaction metrics, the detailed feedback metrics, or the Datadog log data.
+    - The threshold definitions are inconsistent between Sections 4.2.2 and 6.3.1: the judge threshold is greater than or equal to 0.70 in Section 4.2.2 and greater than or equal to 0.60 in Section 6.3.1, so the 19 of the 171 scored production rows scoring between 0.60 and 0.70 are a warning under one section and acceptable under the other, and the thumbs-down rate carries a threshold in Section 4.2.2 but is absent from the Section 6.3.1 list.
+    - The breach definition in Section 6.3.2 refers to a "level 3 tolerance" result that does not map to the plan's metric thresholds or its green, amber, and red framework.
+    - The baseline values are not yet provided (deferred to after the first two production quarters), and the stated baseline basis includes the initial automated evaluation outputs (the 172 selling-point dataset) that the MD withdrew during the validation, so the retrieval threshold, defined as within plus or minus 10 percent of baseline, rests on a baseline that is not valid.
+  5. Sensitivity: sensitivity testing has limited application to this model, which has no trained parameters, a deterministic recommendation step, and cache-based serving in which identical inputs return identical outputs. The plan nonetheless includes a sensitivity test that regenerates selling points with varied inputs and compares cosine similarity, and that test would not support a quality conclusion, because cosine similarity measures semantic proximity rather than factual accuracy. The cost-phrasing errors already in the cache demonstrate this: the error originates in the recommender input data, so regenerating from the same data reproduces it, the original and regenerated outputs agree, and the test returns a high similarity and reports no issue while the inaccuracy persists in both.
+  6. Plan document completeness and accuracy:
+    - The version control and sign-off are not updated to reflect the plan's revision.
+    - Table 2 does not fill the Model Risk Governance risk rating and states a Date of Production Use of December 2025 that does not match the deployment.
+    - Table 3 does not mark the Method System identifier Not Applicable and leaves the Monitoring Frequency, Monitoring Performer, Monitoring Report Approver, and Date of First Monitoring Report as TBD.
+    - Section 4.1 states pilot dates and a banker population that require updating (the plan's stated total of 660 bankers differs from the 527-banker full-launch population per the MO and should be reconciled), and the subject matter expert reviewer role is not identified in Section 3.1.
+    - The change log should be maintained separately from the monitoring report for auditor access.
+    - Section 4.2.2.1 carries residual template language inconsistent with the plan (a quarterly or semi-annual monitoring basis and Level 3 tolerance breaches, against the plan's annual frequency and its green, amber, and red framework).
+    - The plan does not state whether the Datadog log data forms part of the monitoring report or specify its retention period.
 
   As a result, Validation requests the MO and MD to:
-  - Provide evidence that the selling-point feedback collection is enabled and operating in production; if the enablement is complete, no further action is required beyond the evidence.
-  - Confirm through ongoing monitoring that a usable selling-point feedback signal accumulates from the collection.
-  - Correct the evaluation code defects before any of these computations are used for ongoing monitoring, or confirm in the revised monitoring plan that the affected metrics will not be used for this model.
-  - Set the retrieval index partition count appropriate to the corpus size, or use an exact search, before any regeneration of the cache.
-  - Remove the inactive code paths, or connect and test them, and confirm which of the documented re-ranking boosts are intended to operate.
+  - Remove or demote the large language model as-a-judge evaluation from the monitoring plan.
+  - Elevate the banker free-text feedback field to the primary selling-point quality signal, resolving the transmission of the "Other reason" free text from the interface, updating the field's description to encourage feedback on the generated selling point, defining a monitoring cadence shorter than annual, and establishing a selling-point feedback threshold, for example a subject matter expert periodically classifying the collected free-text feedback and comparing the volume of adverse selling-point feedback to the number of leads generated.
+  - Revise the Stability Testing section so it measures stability, separate build-time cache-acceptance checks from ongoing-drift signals and align each metric's cadence with when it can change, and reconcile the overall conclusion with the metrics the plan defines.
+  - Define an unambiguous overall-conclusion criterion that reconciles the metric weighting with the green, amber, and red assignment, and define when a consistent segment-level pattern escalates to an overall breach.
+  - Reconcile the threshold definitions between Sections 4.2.2 and 6.3.1 (the judge score and the thumbs-down rate).
+  - Define an operational breach criterion in Section 6.3.2 in place of the "level 3 tolerance" reference.
+  - Define thresholds for the metrics that lack them (the user comments, the application programming interface transaction, feedback, and Datadog metrics).
+  - Provide the baseline values and re-derive them from valid production data in place of the withdrawn evaluation.
+  - Remove the sensitivity test from Section 6.2 and state the basis for its exclusion. If a sensitivity test is retained, define what constitutes a material difference in output for this model, for example a change to the recommended product, plan, cost characterization, or feature claims; use a comparison method capable of detecting such a difference; and state when the test is run, given that generation occurs only at regeneration events.
+  - Update the plan version control and sign-off, and complete the Table 2 and Table 3 fields.
+  - Correct the Section 4.1 pilot dates and banker population, and identify the subject matter expert reviewer role in Section 3.1.
+  - Clarify that the change log is maintained separately from the monitoring report.
+  - Confirm the monitoring frequency, conform Section 4.2.2.1 to it and to the green, amber, and red framework, and state whether the Datadog log data forms part of the monitoring report, with its retention period.
+  - Upload the updated monitoring plan, signed and dated, to Archer.
 
-  See Sections 7, 8.1, and 12 of this validation report.
+  Because the streamlined testing scope relies on ongoing monitoring as a backstop for reduced independent testing, an adequate quality signal, defined baselines and thresholds, and a coherent conclusion methodology are necessary before the first monitoring cycle. See Section 12 of this validation report.
 - Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
-- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The defects affect the feedback signal, the measurement apparatus, the retrieval configuration, and dormant code. None affects the selling points currently served or the model's ability to meet its business objective; Validation reviewed every generated output and found no evidence of incorrect generation. A Moderate Priority Finding is not warranted on that basis; remediation is nonetheless required before the evaluation computations are reused, before the index governs a regeneration, or before a dormant path activates. Therefore, a Low Priority Finding is justified.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The streamlined testing scope relies on ongoing monitoring as the primary backstop for reduced independent testing, and the plan as drafted relies on a limited automated quality signal and does not define a threshold for selling-point feedback. A High Priority Finding is not warranted because the served content was independently reviewed by Validation and bankers review each output before use, which constrains near-term risk; a Low Priority Finding is not warranted because the monitoring backstop is central to the streamlined validation approach. Therefore, a Moderate Priority Finding is justified.
 
 **Finding Table 3**
 - Finding Count: 3
@@ -180,53 +200,6 @@ There are no actionable issues in this report.
 
 **Finding Table 4**
 - Finding Count: 4
-- Finding Name: Model 7468 Initial Validation Jul 2026 - Monitoring
-- Finding Priority: Moderate
-- MRM Category: Monitoring
-- Finding Description: The ongoing monitoring plan defines performance thresholds for several metrics, but Validation identified the following concerns, detailed in Section 12 of this validation report:
-  1. Signal quality: the plan's primary automated quality metric, the large language model as-a-judge evaluation, provides limited discriminating signal and does not support a performance conclusion (raised in the High Priority Finding on Performance of Estimation Method, and assessed in Section 8.1 of this validation report); and the structured thumbs up or down feedback is oriented to the product recommendation, while the free-text feedback that could serve as a selling-point quality signal is treated as a secondary annual review with no defined threshold or acceptance criteria.
-  2. Metric hygiene:
-    - The outcomes-analysis metrics are restated in the Stability Testing section as stability metrics for which they are not appropriate; the judge evaluation, the subject matter expert review, document mapping quality, and retrieval precision and recall measure correctness rather than stability.
-    - The plan frames the automated content-quality metrics (document mapping, context similarity, and the judge score) as annual ongoing monitoring, although the model serves a fixed cache regenerated only at cache rebuilds, so these metrics reflect cache quality at build time and yield no new signal between regenerations. The plan does not distinguish build-time cache-acceptance checks from genuine ongoing-drift signals.
-    - The overall conclusion in Section 4.2.2 does not incorporate several metrics the plan's own metrics section defines in Section 6.1, namely the user comments, the application programming interface transaction metrics, the feedback data, and the Datadog log data.
-  3. Conclusion methodology: the criterion for the overall performance conclusion is ambiguous, because the metric weighting is described separately from, and does not reconcile with, the criteria for assigning the green, amber, and red outcomes; and the plan states that segment-level results are diagnostic and do not independently trigger breaches unless a consistent pattern emerges, without defining when a consistent segment-level pattern escalates to an overall breach.
-  4. Baselines and thresholds:
-    - Thresholds are provided for the subject matter expert evaluation, the judge score, context similarity, retrieval and document mapping, and the thumbs-down rate, but not for the user free-text comments, the application programming interface transaction metrics, the detailed feedback metrics, or the Datadog log data.
-    - The threshold definitions are inconsistent between Sections 4.2.2 and 6.3.1: the judge threshold is greater than or equal to 0.70 in Section 4.2.2 and greater than or equal to 0.60 in Section 6.3.1, so the 19 of the 171 scored production rows scoring between 0.60 and 0.70 are a warning under one section and acceptable under the other, and the thumbs-down rate carries a threshold in Section 4.2.2 but is absent from the Section 6.3.1 list.
-    - The breach definition in Section 6.3.2 refers to a "level 3 tolerance" result that does not map to the plan's metric thresholds or its green, amber, and red framework.
-    - The baseline values are not yet provided (deferred to after the first two production quarters), and the stated baseline basis includes the initial automated evaluation outputs (the 172 selling-point dataset) that the MD withdrew during the validation, so the retrieval threshold, defined as within plus or minus 10 percent of baseline, rests on a baseline that is not valid.
-  5. Sensitivity: sensitivity testing has limited application to this model, which has no trained parameters, a deterministic recommendation step, and cache-based serving in which identical inputs return identical outputs. The plan nonetheless includes a sensitivity test that regenerates selling points with varied inputs and compares cosine similarity, and that test would not support a quality conclusion, because cosine similarity measures semantic proximity rather than factual accuracy. The cost-phrasing errors already in the cache demonstrate this: the error originates in the recommender input data, so regenerating from the same data reproduces it, the original and regenerated outputs agree, and the test returns a high similarity and reports no issue while the inaccuracy persists in both.
-  6. Plan document completeness and accuracy:
-    - The version control and sign-off are not updated to reflect the plan's revision.
-    - Table 2 does not fill the Model Risk Governance risk rating and states a Date of Production Use of December 2025 that does not match the deployment.
-    - Table 3 does not mark the Method System identifier Not Applicable and leaves the Monitoring Frequency, Monitoring Performer, Monitoring Report Approver, and Date of First Monitoring Report as TBD.
-    - Section 4.1 states pilot dates and a banker population that require updating (the plan's stated total of 660 bankers differs from the 527-banker full-launch population per the MO and should be reconciled), and the subject matter expert reviewer role is not identified in Section 3.1.
-    - The change log should be maintained separately from the monitoring report for auditor access.
-    - Section 4.2.2.1 carries residual template language inconsistent with the plan (a quarterly or semi-annual monitoring basis and Level 3 tolerance breaches, against the plan's annual frequency and its green, amber, and red framework).
-    - The plan does not state whether the Datadog log data forms part of the monitoring report or specify its retention period.
-
-  As a result, Validation requests the MO and MD to:
-  - Remove or demote the large language model as-a-judge evaluation from the monitoring plan.
-  - Elevate the banker free-text feedback field to the primary selling-point quality signal, resolving the transmission of the "Other reason" free text from the interface, updating the field's description to encourage feedback on the generated selling point, defining a monitoring cadence shorter than annual, and establishing a selling-point feedback threshold, for example a subject matter expert periodically classifying the collected free-text feedback and comparing the volume of adverse selling-point feedback to the number of leads generated.
-  - Revise the Stability Testing section so it measures stability, separate build-time cache-acceptance checks from ongoing-drift signals and align each metric's cadence with when it can change, and reconcile the overall conclusion with the metrics the plan defines.
-  - Define an unambiguous overall-conclusion criterion that reconciles the metric weighting with the green, amber, and red assignment, and define when a consistent segment-level pattern escalates to an overall breach.
-  - Reconcile the threshold definitions between Sections 4.2.2 and 6.3.1 (the judge score and the thumbs-down rate).
-  - Define an operational breach criterion in Section 6.3.2 in place of the "level 3 tolerance" reference.
-  - Define thresholds for the metrics that lack them (the user comments, the application programming interface transaction, feedback, and Datadog metrics).
-  - Provide the baseline values and re-derive them from valid production data in place of the withdrawn evaluation.
-  - Remove the sensitivity test from Section 6.2 and state the basis for its exclusion. If a sensitivity test is retained, define what constitutes a material difference in output for this model, for example a change to the recommended product, plan, cost characterization, or feature claims; use a comparison method capable of detecting such a difference; and state when the test is run, given that generation occurs only at regeneration events.
-  - Update the plan version control and sign-off, and complete the Table 2 and Table 3 fields.
-  - Correct the Section 4.1 pilot dates and banker population, and identify the subject matter expert reviewer role in Section 3.1.
-  - Clarify that the change log is maintained separately from the monitoring report.
-  - Confirm the monitoring frequency, conform Section 4.2.2.1 to it and to the green, amber, and red framework, and state whether the Datadog log data forms part of the monitoring report, with its retention period.
-  - Upload the updated monitoring plan, signed and dated, to Archer.
-
-  Because the streamlined testing scope relies on ongoing monitoring as a backstop for reduced independent testing, an adequate quality signal, defined baselines and thresholds, and a coherent conclusion methodology are necessary before the first monitoring cycle. See Section 12 of this validation report.
-- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
-- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The streamlined testing scope relies on ongoing monitoring as the primary backstop for reduced independent testing, and the plan as drafted relies on a limited automated quality signal and does not define a threshold for selling-point feedback. A High Priority Finding is not warranted because the served content was independently reviewed by Validation and bankers review each output before use, which constrains near-term risk; a Low Priority Finding is not warranted because the monitoring backstop is central to the streamlined validation approach. Therefore, a Moderate Priority Finding is justified.
-
-**Finding Table 5**
-- Finding Count: 5
 - Finding Name: Model 7468 Initial Validation Jul 2026 - Implementation Process
 - Finding Priority: Moderate
 - MRM Category: Implementation Process
@@ -254,6 +227,33 @@ There are no actionable issues in this report.
   See Section 11 of this validation report.
 - Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
 - Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The implementation documentation provided is insufficient to complete all aspects of the implementation framework review. A High Priority Finding is not warranted because the control designs as documented are sound and the substantive serving-control and control-execution deficiencies are raised in the High Priority Finding on Performance of Estimation Method; a Low Priority Finding is not warranted because the document as submitted did not describe the implementation framework and controls in respects material to the review, and the final implementation document with production testing remains to be submitted. Therefore, a Moderate Priority Finding is justified.
+
+**Finding Table 5**
+- Finding Count: 5
+- Finding Name: Model 7468 Initial Validation Jul 2026 - Coding and Calculation Errors
+- Finding Priority: Low
+- MRM Category: Coding and Calculation Errors
+- Finding Description: Validation reviewed the model code and identified coding and configuration defects in the feedback, evaluation, and retrieval components, together with inactive code paths that are not connected to the operating model:
+  1. The banker feedback collection committed at the Provisional Approval as a risk mitigant did not operate. The business line intended to collect free-text feedback, but no pathway existed: text entered under the "Other reason" rejection is not transmitted from the Salesforce interface, which was not known until Validation requested the feedback data. The MO states this has since been enabled; Validation has not verified the enablement or observed accumulated feedback.
+  2. The evaluation code contains defects. These computations play no part in serving, so production content is unaffected; they matter because the monitoring plan carries several of these metrics forward:
+    - The context-similarity computation substitutes the first product document when the product-title match fails, so scores can be computed against the wrong context, and it does not run against the retrieved chunks supplied to generation.
+    - The sensitivity computation returns a default of 1.0 when a comparison set is empty, making the industry sensitivity structurally 100 percent.
+    - Retrieved document names are not deduplicated before scoring.
+    - The judge evaluation records a fixed mid-range score when the model response cannot be parsed, so a recorded score is not always a judgment.
+    - The judge evaluation builds a recommended-features instruction that the prompt template has no placeholder for, so it never reaches the judge.
+  3. The production retrieval index is misconfigured for the corpus size: 100 partitions over a 32-chunk corpus, where standard guidance for this index type would place the count at one. Most partitions are empty, the index provides no speed benefit, and it can return an incomplete chunk set. The effect on current outputs is contained because production serves cache-only and Validation reviewed every generated output; the configuration governs retrieval again at any regeneration.
+  4. The code carries paths that were built but never connected: the business-size and product-type re-ranking boosts, which cannot operate because the metadata the first depends on is not populated and the data model lacks the attribute the second keys on; unused request parameters; legacy methods; commented-out logic; a duplicated block that emits chunk metadata twice into the generation prompt; and an approval flag stored on every output but never read. These do not affect served content, and they would activate untested behavior if the data or configuration they depend on changes.
+
+  As a result, Validation requests the MO and MD to:
+  - Provide evidence that the selling-point feedback collection is enabled and operating in production; if the enablement is complete, no further action is required beyond the evidence.
+  - Confirm through ongoing monitoring that a usable selling-point feedback signal accumulates from the collection.
+  - Correct the evaluation code defects before any of these computations are used for ongoing monitoring, or confirm in the revised monitoring plan that the affected metrics will not be used for this model.
+  - Set the retrieval index partition count appropriate to the corpus size, or use an exact search, before any regeneration of the cache.
+  - Remove the inactive code paths, or connect and test them, and confirm which of the documented re-ranking boosts are intended to operate.
+
+  See Sections 7, 8.1, and 12 of this validation report.
+- Root Cause Selection: Technical Concern - The noted deficiency does not result from a control environment design deficiency or control breach and does not have a clear root cause.
+- Justification for Classification: Per MRM Issue & Finding Management Guidelines, the classification is driven by: The defects affect the feedback signal, the measurement apparatus, the retrieval configuration, and dormant code. None affects the selling points currently served or the model's ability to meet its business objective; Validation reviewed every generated output and found no evidence of incorrect generation. A Moderate Priority Finding is not warranted on that basis; remediation is nonetheless required before the evaluation computations are reused, before the index governs a regeneration, or before a dormant path activates. Therefore, a Low Priority Finding is justified.
 
 #### 5.4.3 Non-Actionable Findings
 
